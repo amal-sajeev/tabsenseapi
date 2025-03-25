@@ -52,6 +52,54 @@ def fuse_image(original, negative, alpha:float = 0.5):
     fused = np.clip(fusedarray, 0, 255).astype(np.uint8)
     return(Image.fromarray(fused))
 
+import numpy as np
+from PIL import Image
+
+def chroma_key(foreground, background, key_color=(0, 0, 0), tolerance=30):
+    """
+    Perform chroma keying by removing a specific color from the foreground image
+    and overlaying it on a background image.
+    
+    :param foreground: Foreground PIL Image
+    :param background: Background PIL Image
+    :param key_color: RGB color to be removed (default is black)
+    :param tolerance: Color tolerance for chroma keying
+    :return: Composited image
+    """
+    # Ensure both images are in RGBA mode
+    foreground = foreground.convert("RGBA")
+    background = background.convert("RGBA")
+    
+    # Resize background to match foreground if needed
+    # Use .copy() to avoid reference issues
+    background = background.resize(foreground.size).copy()
+    
+    # Convert images to numpy arrays for pixel-level manipulation
+    fore_array = np.array(foreground)
+    
+    # Create a mask for the key color
+    r, g, b, a = fore_array[:,:,0], fore_array[:,:,1], fore_array[:,:,2], fore_array[:,:,3]
+    
+    # Calculate the color difference
+    color_diff = np.sqrt(
+        (r - key_color[0])**2 + 
+        (g - key_color[1])**2 + 
+        (b - key_color[2])**2
+    )
+    
+    # Create a mask where pixels are within the tolerance
+    mask = color_diff <= tolerance
+    
+    # Make these pixels fully transparent
+    fore_array[mask, 3] = 0
+    
+    # Convert back to PIL Image
+    result = Image.fromarray(fore_array)
+    
+    # Composite the images
+    composited = Image.alpha_composite(background, result)
+    
+    return composited
 
 
 def image_display(arrimg : dict):
@@ -76,5 +124,5 @@ def image_display(arrimg : dict):
 imgarr = {"Original":_open_image("imagedata/woodstain.jpg")}
 imgarr["Negative"]= makeneg(_open_image("imagedata/wood.jpg"))
 imgarr["Fused"]= fuse_image(imgarr["Original"], imgarr["Negative"], 0.5)
-imgarr["FusedEdge"] = chroma_key(imgarr["Fused"].filter(ImageFilter.FIND_EDGES),imgarr["Original"])
+imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
 image_display(imgarr)
