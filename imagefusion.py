@@ -1,164 +1,60 @@
+import cv2
 import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
 
-def negativemake(image_path, output_path = None, alpha=0.5):
-    """
-    Creates a negative of an image and saves it.
-    """
+def detect_green_border(image):
+    # Convert to HSV color space for better color detection
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    img = Image.open(image_path)
+    # Define range of green `color in HSV
+    lower_green = np.array([35, 50, 50])
+    upper_green = np.array([85, 255, 255])
 
-    img_array = np.array(img).astype(np.float32)
+    # Create a mask for green color
+    green_mask = cv2.inRange(hsv, lower_green, upper_green)
 
-    # Create the negative by inverting pixel values
-    if len(img_array.shape) == 3 and img_array.shape[2] == 3:  # RGB image
-        max_val = 255.0
-        negative = max_val - img_array
-    elif len(img_array.shape) == 2 or (len(img_array.shape) == 3 and img_array.shape[2] == 1):  # Grayscale
-        max_val = 255.0
-        negative = max_val - img_array
-    else:
-        raise ValueError("Unsupported image format")
+    # Find contours of the green border
+    contours, _ = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    negative = np.clip(negative, 0, 255).astype(np.uint8)
+    # Find the largest contour that is likely the border
+    border_contour = max(contours, key=cv2.contourArea)
 
-    neg_image = Image.fromarray(negative)
+    # Approximate the contour to a polygon
+    epsilon = 0.02 * cv2.arcLength(border_contour, True)
+    approx = cv2.approxPolyDP(border_contour, epsilon, True)
 
+    return approx
 
-    if output_path:
-        neg_image.save(output_path)
+def crop_to_green_border(image, contour):
+    # Get the bounding rectangle of the contour
+    x, y, w, h = cv2.boundingRect(contour)
 
-def fuse_image_with_negative(image_path,neg_path, output_path=None, alpha=0.5):
-    """
-    Fuses an image with its negative version.
+    # Create a mask of the same size as the image
+    mask = np.zeros(image.shape[:2], dtype=np.uint8)
 
-    Parameters:
-    image_path (str): Path to the source image
-    output_path (str, optional): Path to save the result. If None, won't save.
-    alpha (float): Blending factor between original and negative (0.0 to 1.0)
+    # Draw the contour on the mask
+    cv2.drawContours(mask, [contour], -1, 255, -1)
 
-    Returns:
-    PIL.Image: The fused image
-    """
-    # Open the source image
-    img = Image.open(image_path)
+    # Create a masked image
+    masked_image = cv2.bitwise_and(image, image, mask=mask)
 
-    #Open the negative Image
-    negimg = Image.open(neg_path)
+    # Crop the image
+    cropped = masked_image[y:y+h, x:x+w]
 
-    # Convert to numpy array for easier manipulation
-    img_array = np.array(img).astype(np.float32)
+    return cropped
 
-    negative = np.array(negimg).astype(np.float32)
+# Read the image
+image = cv2.imread('image1.jpg')
 
-    # Blend the original with the negative
-    fused = alpha * img_array + (1 - alpha) * negative
+try:
+    # Detect green border
+    green_border_contour = detect_green_border(image)
 
-    # Convert back to uint8
-    fused = np.clip(fused, 0, 255).astype(np.uint8)
+    # Crop the image
+    cropped_image = crop_to_green_border(image, green_border_contour)
 
-    # Create a new image from the array
-    fused_img = Image.fromarray(fused)
+    # Save the cropped image
+    cv2.imwrite('cropped_geeksforgeeks.png', cropped_image)
+    print("Image cropped successfully!")
 
-    # Save if output path is provided
-    if output_path:
-        fused_img.save(output_path)
-
-    return fused_img
-
-def display_images(original_path, stain_path, neg_path, alpha=0.5):
-    """
-    Displays the original image, its negative, and the fused result.
-    First row: original, stained, negative, stained+negative fusion
-    Second row: original, negative, original+negative fusion
-    """
-    # Open original image
-    original = Image.open(original_path)
-    # Open stain image
-    stained = Image.open(stain_path)
-    # Open negative image
-    negative = Image.open(neg_path)
-
-    # Create fused images
-    stained_neg_fused = fuse_image_with_negative(stain_path, neg_path, alpha=alpha)
-    orig_neg_fused = fuse_image_with_negative(original_path, neg_path, alpha=alpha)
-
-    # Display all images
-    plt.figure(figsize=(15, 10))
-
-    # First row
-    plt.subplot(2, 4, 1)
-    plt.imshow(original)
-    plt.title("Original")
-    plt.axis('off')
-
-    plt.subplot(2, 4, 2)
-    plt.imshow(stained)
-    plt.title("Stained")
-    plt.axis('off')
-
-    plt.subplot(2, 4, 3)
-    plt.imshow(negative)
-    plt.title("Negative")
-    plt.axis('off')
-
-    plt.subplot(2, 4, 4)
-    plt.imshow(stained_neg_fused)
-    plt.title(f"Stained+Negative (α={alpha})")
-    plt.axis('off')
-
-    # Second row
-    plt.subplot(2, 4, 5)
-    plt.imshow(original)
-    plt.title("Original")
-    plt.axis('off')
-
-    plt.subplot(2, 4, 6)
-    plt.imshow(negative)
-    plt.title("Negative")
-    plt.axis('off')
-
-    plt.subplot(2, 4, 7)
-    plt.imshow(orig_neg_fused)
-    plt.title(f"Original+Negative (α={alpha})")
-    plt.axis('off')
-
-    plt.tight_layout()
-    plt.show()
-
-# Wood Example
-
-# image_path = "wood.jpg"
-# neg_path = "woodneg.jpg"
-# stain_path = "woodstain.jpg"
-#
-# neg_image = negativemake(image_path, "woodneg.jpg")
-#
-# # Create and save the fused image
-# # fused_img = fuse_image_with_negative(image_path, neg_path, "fused_result.jpg")
-#
-# # Display comparison of original, negative and fused
-# display_images(image_path, stain_path, neg_path, alpha=0.5)
-
-#Marble Example
-
-# image_path = "marble.jpg"
-# neg_path = "marbleneg.jpg"
-# stain_path = "marblestain.jpg"
-#
-# neg_image = negativemake(image_path, "marbleneg.jpg")
-
-#Dark Table Example
-
-image_path = "darktable.jpg"
-neg_path = "darktableneg.jpg"
-stain_path = "darktablestain.jpg"
-
-neg_image = negativemake(image_path, neg_path)
-
-# Create and save the fused image
-# fused_img = fuse_image_with_negative(image_path, neg_path, "fused_result.jpg")
-
-# Display comparison of original, negative and fused
-display_images(image_path, stain_path, neg_path, alpha=0.5)
+except Exception as e:
+    print(f"An error occurred: {e}")

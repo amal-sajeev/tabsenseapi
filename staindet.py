@@ -1,5 +1,5 @@
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageEnhance
 import matplotlib.pyplot as plt
 
 def _open_image(image_path:str):
@@ -66,6 +66,10 @@ def chroma_key(foreground, background, key_color=(0, 0, 0), tolerance=30):
     :param tolerance: Color tolerance for chroma keying
     :return: Composited image
     """
+    # Increase brightness to 100%
+    brightness_enhancer = ImageEnhance.Brightness(foreground)
+    foreground = brightness_enhancer.enhance(2.0)  # 2.0 typically brings to full brightness
+    
     # Ensure both images are in RGBA mode
     foreground = foreground.convert("RGBA")
     background = background.convert("RGBA")
@@ -102,6 +106,7 @@ def chroma_key(foreground, background, key_color=(0, 0, 0), tolerance=30):
     return composited
 
 
+
 def image_display(arrimg : dict):
     """Given data arrays with the title of the image, create a window displaying the images with their titles in a grid.
 
@@ -121,8 +126,8 @@ def image_display(arrimg : dict):
     plt.tight_layout()
     plt.show()
 
-imgarr = {"Original":_open_image("imagedata/woodstain.jpg")}
-imgarr["Negative"]= makeneg(_open_image("imagedata/wood.jpg"))
+imgarr = {"Original":_open_image("imagedata/workstain.jpg")}
+imgarr["Negative"]= makeneg(_open_image("imagedata/work.jpg"))
 imgarr["Fused"]= fuse_image(imgarr["Original"], imgarr["Negative"], 0.5)
 imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
 image_display(imgarr)
