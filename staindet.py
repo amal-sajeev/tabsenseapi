@@ -102,7 +102,9 @@ def chroma_key(foreground, background, key_color=(0, 0, 0), tolerance=30):
     
     return composited
 
-def detect_color_border(image,color):
+def detect_color_border(imagepath,color):
+
+    image = cv2.imread(imagepath)
     # Convert to HSV color space for better color detection
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     color_ranges = {}
