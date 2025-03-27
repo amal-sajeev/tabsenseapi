@@ -205,11 +205,14 @@ def image_display(arrimg : dict):
     plt.tight_layout()
     plt.show()
 
-#Import original image
+def detect(control:str, current:str):
+    #Import original image
+    imgarr = {"Original":_open_image(control,True,"blue")}
+    imgarr["Negative"]= makeneg(imgarr["Original"])
+    imgarr["Current"] = _open_image(current,True,"blue")
+    imgarr["Fused"]= fuse_image(imgarr["Current"], imgarr["Negative"], 0.5)
+    imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
+    print(imgarr["FusedEdge"])
+    image_display(imgarr)
 
-
-imgarr = {"Original":_open_image("imagedata/bluestain.jpg")}
-imgarr["Negative"]= makeneg(_open_image("imagedata/blue.jpg"))
-imgarr["Fused"]= fuse_image(imgarr["Original"], imgarr["Negative"], 0.5)
-imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
-image_display(imgarr)
+detect("imagedata/blue.jpg","imagedata/bluestain.jpg")
