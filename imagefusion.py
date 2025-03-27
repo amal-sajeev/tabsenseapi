@@ -1,19 +1,26 @@
 import cv2
 import numpy as np
+from PIL import Image
 
 def detect_and_crop_color_border(image, color='blue'):
     """
     Detect and crop colored border with improved robustness.
     
     Args:
-        image (numpy.ndarray): Input image
+        image (PIL.Image): Input image
         color (str): Color of the border to detect
     
     Returns:
-        numpy.ndarray: Cropped image
+        PIL.Image: Cropped image
     """
+    # Convert PIL Image to numpy array
+    np_image = np.array(image)
+    
+    # Convert to BGR for OpenCV (PIL uses RGB)
+    cv_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
+    
     # Convert to HSV color space
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
     
     # Color ranges in HSV
     color_ranges = {
@@ -41,42 +48,49 @@ def detect_and_crop_color_border(image, color='blue'):
     hull = cv2.convexHull(border_contour)
     
     # Create a mask for the entire image
-    mask = np.zeros(image.shape[:2], dtype=np.uint8)
+    mask = np.zeros(cv_image.shape[:2], dtype=np.uint8)
     
     # Fill the convex hull on the mask
     cv2.fillPoly(mask, [hull], 255)
     
     # Bitwise AND to keep only the area inside the border
-    result = cv2.bitwise_and(image, image, mask=mask)
+    result = cv2.bitwise_and(cv_image, cv_image, mask=mask)
     
-    return result
+    # Convert back to RGB for PIL
+    result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+    
+    # Convert back to PIL Image
+    return Image.fromarray(result_rgb)
 
-def process_image(input_path, output_path, color='blue'):
+def process_image(image, color='blue'):
     """
     Process an image by detecting and cropping to a colored border.
     
     Args:
-        input_path (str): Path to input image
-        output_path (str): Path to save processed image
+        image (PIL.Image): Input image
         color (str, optional): Border color to detect. Defaults to 'blue'.
+    
+    Returns:
+        PIL.Image: Cropped image
     """
     try:
-        # Read the image
-        image = cv2.imread(input_path)
-        
-        if image is None:
-            raise ValueError(f"Could not read image from {input_path}")
-        
         # Crop to colored border
         cropped_image = detect_and_crop_color_border(image, color)
         
-        # Save the cropped image
-        cv2.imwrite(output_path, cropped_image)
-        print(f"Image cropped successfully and saved to {output_path}")
+        return cropped_image
     
     except Exception as e:
         print(f"Error processing image: {e}")
+        return image
 
 # Example usage
 if __name__ == "__main__":
-    process_image('bluemult.png', 'cropped_blueblock.png', color='blue')
+    # Load image using PIL
+    input_image = Image.open('blueblock.png')
+    
+    # Process the image
+    processed_image = process_image(input_image, color='blue')
+    
+    # Save the processed image
+    processed_image.save('cropped_blueblock.png')
+    print("Image processed successfully!")

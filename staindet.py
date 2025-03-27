@@ -1,8 +1,90 @@
+import cv2
 import numpy as np
 from PIL import Image, ImageFilter, ImageEnhance
 import matplotlib.pyplot as plt
 
-def _open_image(image_path:str):
+def detect_and_crop_color_border(image, color='blue'):
+    """
+    Detect and crop colored border with improved robustness.
+    
+    Args:
+        image (PIL.Image): Input image
+        color (str): Color of the border to detect
+    
+    Returns:
+        PIL.Image: Cropped image
+    """
+    # Convert PIL Image to numpy array
+    np_image = np.array(image)
+    
+    # Convert to BGR for OpenCV (PIL uses RGB)
+    cv_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
+    
+    # Convert to HSV color space
+    hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
+    
+    # Color ranges in HSV
+    color_ranges = {
+        "green": ([35, 50, 50], [85, 255, 255]),
+        "blue": ([100, 50, 50], [140, 255, 255]),
+        "yellow": ([20, 50, 50], [30, 255, 255])
+    }
+    
+    # Get color range
+    lower, upper = color_ranges.get(color, color_ranges['blue'])
+    
+    # Create mask for specified color
+    color_mask = cv2.inRange(hsv, np.array(lower), np.array(upper))
+    
+    # Find contours of colored border
+    contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if not contours:
+        return image  # Return original image if no border found
+    
+    # Find the largest contour (presumably the border)
+    border_contour = max(contours, key=cv2.contourArea)
+    
+    # Get convex hull to smooth out irregularities
+    hull = cv2.convexHull(border_contour)
+    
+    # Create a mask for the entire image
+    mask = np.zeros(cv_image.shape[:2], dtype=np.uint8)
+    
+    # Fill the convex hull on the mask
+    cv2.fillPoly(mask, [hull], 255)
+    
+    # Bitwise AND to keep only the area inside the border
+    result = cv2.bitwise_and(cv_image, cv_image, mask=mask)
+    
+    # Convert back to RGB for PIL
+    result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+    
+    # Convert back to PIL Image
+    return Image.fromarray(result_rgb)
+
+def process_image(image, color='blue'):
+    """
+    Process an image by detecting and cropping to a colored border.
+    
+    Args:
+        image (PIL.Image): Input image
+        color (str, optional): Border color to detect. Defaults to 'blue'.
+    
+    Returns:
+        PIL.Image: Cropped image
+    """
+    try:
+        # Crop to colored border
+        cropped_image = detect_and_crop_color_border(image, color)
+        
+        return cropped_image
+    
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return image
+
+def _open_image(image_path:str, use_border : bool = False, color : str = "blue"):
     """Opens an image from disk and converts it into a PIL Image array.
 
     Args:
@@ -11,6 +93,8 @@ def _open_image(image_path:str):
         PIL Image: A float32 Numpy Image array
     """
     img = Image.open(image_path)
+    if use_border:
+        img = process_image(img)
     img_array = np.array(img).astype(np.uint8)
     return(img_array)
 
@@ -102,57 +186,6 @@ def chroma_key(foreground, background, key_color=(0, 0, 0), tolerance=30):
     
     return composited
 
-def detect_color_border(imagepath,color):
-
-    image = cv2.imread(imagepath)
-    # Convert to HSV color space for better color detection
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    color_ranges = {}
-    # Define range of green `color in HSV
-    color_ranges["lower_green"] = np.array([35, 50, 50])
-    color_ranges["upper_green"] = np.array([85, 255, 255])
-
-    # Define range of blue color in HSV
-    color_ranges["lower_blue"] = np.array([100, 50, 50])   # Hue: 100-140, Saturation: 50-255, Value: 50-255
-    color_ranges["upper_blue"] = np.array([140, 255, 255])
-
-    #Define range of yellow coloor in HSV
-    color_ranges["lower_yellow"] = np.array([20, 50, 50])  # Hue: 20-30, Saturation: 50-255, Value: 50-255
-    color_ranges["upper_yellow"] = np.array([30, 255, 255])
-
-    # Create a mask for green color
-    color_mask = cv2.inRange(hsv, color_ranges[f'lower_{color}'], color_ranges[f'upper_{color}'])
-
-    # Find contours of the green border
-    contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Find the largest contour that is likely the border
-    border_contour = max(contours, key=cv2.contourArea)
-
-    # Approximate the contour to a polygon
-    epsilon = 0.02 * cv2.arcLength(border_contour, True)
-    approx = cv2.approxPolyDP(border_contour, epsilon, True)
-
-    return approx
-
-def crop_to_border(image, contour):
-    # Get the bounding rectangle of the contour
-    x, y, w, h = cv2.boundingRect(contour)
-
-    # Create a mask of the same size as the image
-    mask = np.zeros(image.shape[:2], dtype=np.uint8)
-
-    # Draw the contour on the mask
-    cv2.drawContours(mask, [contour], -1, 255, -1)
-
-    # Create a masked image
-    masked_image = cv2.bitwise_and(image, image, mask=mask)
-
-    # Crop the image
-    cropped = masked_image[y:y+h, x:x+w]
-
-    return cropped
-
 def image_display(arrimg : dict):
     """Given data arrays with the title of the image, create a window displaying the images with their titles in a grid.
 
@@ -175,8 +208,8 @@ def image_display(arrimg : dict):
 #Import original image
 
 
-imgarr = {"Original":_open_image("imagedata/workstain.jpg")}
-imgarr["Negative"]= makeneg(_open_image("imagedata/work.jpg"))
+imgarr = {"Original":_open_image("imagedata/bluestain.jpg")}
+imgarr["Negative"]= makeneg(_open_image("imagedata/blue.jpg"))
 imgarr["Fused"]= fuse_image(imgarr["Original"], imgarr["Negative"], 0.5)
 imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
 image_display(imgarr)
