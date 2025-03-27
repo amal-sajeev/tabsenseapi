@@ -1,64 +1,82 @@
 import cv2
 import numpy as np
 
-def detect_color_border(image,color):
-    # Convert to HSV color space for better color detection
+def detect_and_crop_color_border(image, color='blue'):
+    """
+    Detect and crop colored border with improved robustness.
+    
+    Args:
+        image (numpy.ndarray): Input image
+        color (str): Color of the border to detect
+    
+    Returns:
+        numpy.ndarray: Cropped image
+    """
+    # Convert to HSV color space
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    color_ranges = {}
-    # Define range of green `color in HSV
-    color_ranges["lower_green"] = np.array([35, 50, 50])
-    color_ranges["upper_green"] = np.array([85, 255, 255])
-
-    # Define range of blue color in HSV
-    color_ranges["lower_blue"] = np.array([100, 50, 50])   # Hue: 100-140, Saturation: 50-255, Value: 50-255
-    color_ranges["upper_blue"] = np.array([140, 255, 255])
-
-    #Define range of yellow color in HSV
-    color_ranges["lower_yellow"] = np.array([20, 50, 50])  # Hue: 20-30, Saturation: 50-255, Value: 50-255
-    color_ranges["upper_yellow"] = np.array([30, 255, 255])
-
-    # Create a mask for green color
-    color_mask = cv2.inRange(hsv, color_ranges[f'lower_{color}'], color_ranges[f'upper_{color}'])
-
-    # Find contours of the green border
+    
+    # Color ranges in HSV
+    color_ranges = {
+        "green": ([35, 50, 50], [85, 255, 255]),
+        "blue": ([100, 50, 50], [140, 255, 255]),
+        "yellow": ([20, 50, 50], [30, 255, 255])
+    }
+    
+    # Get color range
+    lower, upper = color_ranges.get(color, color_ranges['blue'])
+    
+    # Create mask for specified color
+    color_mask = cv2.inRange(hsv, np.array(lower), np.array(upper))
+    
+    # Find contours of colored border
     contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Find the largest contour that is likely the border
+    
+    if not contours:
+        return image  # Return original image if no border found
+    
+    # Find the largest contour (presumably the border)
     border_contour = max(contours, key=cv2.contourArea)
-
-    # Approximate the contour to a polygon
-    epsilon = 0.02 * cv2.arcLength(border_contour, True)
-    approx = cv2.approxPolyDP(border_contour, epsilon, True)
-
-    return approx
-
-def crop_to_border(image, contour):
-    # Get the bounding rectangle of the contour
-    x, y, w, h = cv2.boundingRect(contour)
-
-    # Create a mask of the same size as the image
+    
+    # Get convex hull to smooth out irregularities
+    hull = cv2.convexHull(border_contour)
+    
+    # Create a mask for the entire image
     mask = np.zeros(image.shape[:2], dtype=np.uint8)
+    
+    # Fill the convex hull on the mask
+    cv2.fillPoly(mask, [hull], 255)
+    
+    # Bitwise AND to keep only the area inside the border
+    result = cv2.bitwise_and(image, image, mask=mask)
+    
+    return result
 
-    # Draw the contour on the mask
-    cv2.drawContours(mask, [contour], -1, 255, -1)
+def process_image(input_path, output_path, color='blue'):
+    """
+    Process an image by detecting and cropping to a colored border.
+    
+    Args:
+        input_path (str): Path to input image
+        output_path (str): Path to save processed image
+        color (str, optional): Border color to detect. Defaults to 'blue'.
+    """
+    try:
+        # Read the image
+        image = cv2.imread(input_path)
+        
+        if image is None:
+            raise ValueError(f"Could not read image from {input_path}")
+        
+        # Crop to colored border
+        cropped_image = detect_and_crop_color_border(image, color)
+        
+        # Save the cropped image
+        cv2.imwrite(output_path, cropped_image)
+        print(f"Image cropped successfully and saved to {output_path}")
+    
+    except Exception as e:
+        print(f"Error processing image: {e}")
 
-    # Create a masked image
-    masked_image = cv2.bitwise_and(image, image, mask=mask)
-
-    # Crop the image
-    cropped = masked_image[y:y+h, x:x+w]
-
-    return cropped
-
-# Read the image
-image = cv2.imread('blueblock.png')
-
-# Detect green border
-green_border_contour = detect_color_border(image, "blue")
-
-# Crop the image
-cropped_image = crop_to_border(image, green_border_contour)
-
-# Save the cropped image
-cv2.imwrite('cropped_blackbord.png', cropped_image)
-print("Image cropped successfully!")
+# Example usage
+if __name__ == "__main__":
+    process_image('bluemult.png', 'cropped_blueblock.png', color='blue')

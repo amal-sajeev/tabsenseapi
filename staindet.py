@@ -172,6 +172,9 @@ def image_display(arrimg : dict):
     plt.tight_layout()
     plt.show()
 
+#Import original image
+
+
 imgarr = {"Original":_open_image("imagedata/workstain.jpg")}
 imgarr["Negative"]= makeneg(_open_image("imagedata/work.jpg"))
 imgarr["Fused"]= fuse_image(imgarr["Original"], imgarr["Negative"], 0.5)
