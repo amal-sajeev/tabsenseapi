@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from PIL import Image, ImageFilter, ImageEnhance
+from PIL import Image, ImageFilter, ImageEnhance, ImageOps
 import matplotlib.pyplot as plt
 
 def detect_and_crop_color_border(image, color='blue'):
@@ -132,9 +132,36 @@ def fuse_image(original, negative, alpha:float = 0.5):
     ogarray = np.array(original).astype(np.float32)
     negarray = np.array(negative).astype(np.float32)
     fusedarray = alpha * ogarray + (1- alpha) * negarray
-
     fused = np.clip(fusedarray, 0, 255).astype(np.uint8)
-    return(Image.fromarray(fused))
+    fuseimage = Image.fromarray(fused).filter(ImageFilter.FIND_EDGES)
+    border = (25,25,25,25)
+    return(ImageOps.crop(fuseimage,border))
+
+def detect_stain(image, threshold=1):
+    """
+    Detect if an image contains any non-black pixels.
+    
+    Parameters:
+    - image: PIL Image object
+    - threshold: Maximum pixel value to still be considered "black" 
+                 (allows for slight variations due to compression)
+    
+    Returns:
+    - Boolean: True if image contains non-black pixels, False otherwise
+    """
+    # Convert image to numpy array
+    img_array = np.array(image)
+    
+    # Handle both color and grayscale images
+    if len(img_array.shape) == 3:
+        # For color images, check if any pixel in any channel exceeds threshold
+        return np.any(img_array > threshold)
+    elif len(img_array.shape) == 2:
+        # For grayscale images, check if any pixel exceeds threshold
+        return np.any(img_array > threshold)
+    else:
+        # Unexpected image format
+        raise ValueError("Unsupported image format")
 
 def chroma_key(foreground, background, key_color=(0, 0, 0), tolerance=30):
     """
@@ -211,8 +238,10 @@ def detect(control:str, current:str):
     imgarr["Negative"]= makeneg(imgarr["Original"])
     imgarr["Current"] = _open_image(current,True,"blue")
     imgarr["Fused"]= fuse_image(imgarr["Current"], imgarr["Negative"], 0.5)
-    imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
-    print(imgarr["FusedEdge"])
+    # imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
+    imgarr["Fused"].save("edgetest", "png")
+    print(np.array(imgarr["Fused"]).astype(int))
+    print(detect_stain(imgarr["Fused"],2))
     image_display(imgarr)
 
-detect("imagedata/blue.jpg","imagedata/bluestain.jpg")
+detect("imagedata/bluesplit.png","imagedata/bluesplitstain.png")
