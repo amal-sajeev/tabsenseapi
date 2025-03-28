@@ -94,7 +94,10 @@ def test_concentrated_border_detection():
     result_image = highlight_non_black_concentrated_region(test_image, target_image)
     
     # Optionally save or display the result
+    test_image.save("test_image.png")
     result_image.save('concentrated_highlighted_image.png')
     print("Image saved with red border around the most concentrated non-black region")
     
     return result_image
+
+test_concentrated_border_detection()

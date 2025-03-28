@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
-from PIL import Image, ImageFilter, ImageEnhance, ImageOps
+from PIL import Image, ImageFilter, ImageEnhance, ImageOps, ImageDraw
 import matplotlib.pyplot as plt
+from scipy import ndimage
 
 def detect_and_crop_color_border(image, color='blue'):
     """
@@ -95,8 +96,7 @@ def _open_image(image_path:str, use_border : bool = False, color : str = "blue")
     img = Image.open(image_path)
     if use_border:
         img = process_image(img)
-    img_array = np.array(img).astype(np.uint8)
-    return(img_array)
+    return(img)
 
 def makeneg(img_array,alpha:float = 0.5):
     """Takes an image array and converts the array data into its negative. 
@@ -108,6 +108,7 @@ def makeneg(img_array,alpha:float = 0.5):
     Raises:
         ValueError: _description_
     """
+    img_array = np.array(img_array).astype(np.uint8)
     if len(img_array.shape) == 3 and img_array.shape[2] == 3:  # RGB image
         max_val = 255.0
         negative = max_val - img_array
@@ -162,6 +163,83 @@ def detect_stain(image, threshold=1):
     else:
         # Unexpected image format
         raise ValueError("Unsupported image format")
+
+def highlight_stain(test_image, target_image, border_width=2, border_color=(255, 0, 0)):
+    """
+    Detects the most concentrated region of non-black pixels and draws a border 
+    around this region on the target image.
+    
+    Args:
+        test_image (PIL.Image): Image to check for non-black pixels
+        target_image (PIL.Image): Image to draw borders on
+        border_width (int): Width of the border in pixels
+        border_color (tuple): RGB color of the border
+    
+    Returns:
+        PIL.Image: Target image with red border around the most concentrated non-black region
+    """
+
+    border = (25,25,25,25)
+    target_image = ImageOps.crop(target_image,border)
+    # Ensure images are the same size
+    if test_image.size != target_image.size:
+        raise ValueError("Test and target images must be the same dimensions")
+    
+    # Convert test image to numpy array
+    test_array = np.array(test_image)
+    
+    # Create a copy of the target image to draw on
+    highlighted_image = target_image.copy()
+    draw = ImageDraw.Draw(highlighted_image)
+    
+    # Handle different image modes
+    if len(test_array.shape) == 2:  # Grayscale image
+        non_black_mask = test_array > 0
+    elif len(test_array.shape) == 3:  # RGB or RGBA image
+        non_black_mask = np.any(test_array > 0, axis=2)
+    else:
+        raise ValueError("Unsupported image mode")
+    
+    # If no non-black pixels found, return the original image
+    if not np.any(non_black_mask):
+        return highlighted_image
+    
+    # Label connected regions
+    labeled_array, num_features = ndimage.label(non_black_mask)
+    
+    # If no features found, return the original image
+    if num_features == 0:
+        return highlighted_image
+    
+    # Find the size of each region
+    region_sizes = np.bincount(labeled_array.ravel())[1:]
+    
+    # Find the label of the largest region
+    largest_region_label = np.argmax(region_sizes) + 1
+    
+    # Create a mask for the largest region
+    largest_region_mask = labeled_array == largest_region_label
+    
+    # Find the bounding box of the largest region
+    region_coords = np.column_stack(np.where(largest_region_mask))
+    min_y, min_x = region_coords.min(axis=0)
+    max_y, max_x = region_coords.max(axis=0)
+    
+    # Add a small padding
+    padding = 3
+    min_y = max(0, min_y - padding)
+    min_x = max(0, min_x - padding)
+    max_y = min(target_image.height - 1, max_y + padding)
+    max_x = min(target_image.width - 1, max_x + padding)
+    
+    # Draw a red rectangle border
+    draw.rectangle(
+        [(min_x, min_y), (max_x, max_y)], 
+        outline=border_color, 
+        width=border_width
+    )
+    
+    return highlighted_image
 
 def chroma_key(foreground, background, key_color=(0, 0, 0), tolerance=30):
     """
@@ -241,7 +319,7 @@ def detect(control:str, current:str):
     # imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
     imgarr["Fused"].save("edgetest", "png")
     print(np.array(imgarr["Fused"]).astype(int))
-    print(detect_stain(imgarr["Fused"],2))
+    imgarr["Highlighted"] = highlight_stain(imgarr["Fused"], imgarr["Original"])
     image_display(imgarr)
 
-detect("imagedata/bluesplit.png","imagedata/bluesplitstain.png")
+detect("imagedata/blue.jpg","imagedata/bluestain.jpg")
