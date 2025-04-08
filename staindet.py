@@ -164,82 +164,114 @@ def detect_stain(image, threshold=1):
         # Unexpected image format
         raise ValueError("Unsupported image format")
 
-def highlight_stain(test_image, target_image, border_width=2, border_color=(255, 0, 0)):
+def highlight_stain(fused_image, draw_image, num_sectors=5, border_color=(255, 0, 0), border_width=3):
     """
-    Detects the most concentrated region of non-black pixels and draws a border 
-    around this region on the target image.
+    Divides the image into square sectors and finds the one with the highest concentration of non-black pixels.
     
     Args:
-        test_image (PIL.Image): Image to check for non-black pixels
-        target_image (PIL.Image): Image to draw borders on
-        border_width (int): Width of the border in pixels
-        border_color (tuple): RGB color of the border
-    
+        fused_image: PIL Image - The input image to analyze,
+        draw_image: PIL Image - The input image to highlight the stain on
+        num_sectors: int - Number of sectors to divide the image into (both horizontally and vertically)
+        border_color: tuple - RGB color for the border (default: blue)
+        border_width: int - Width of the border in pixels
+        
     Returns:
-        PIL.Image: Target image with red border around the most concentrated non-black region
+        PIL Image with a border drawn around the sector with highest non-black pixel concentration
     """
-
-    border = (25,25,25,25)
-    target_image = ImageOps.crop(target_image,border)
-    # Ensure images are the same size
-    if test_image.size != target_image.size:
-        raise ValueError("Test and target images must be the same dimensions")
+    import numpy as np
+    from PIL import Image, ImageDraw
     
-    # Convert test image to numpy array
-    test_array = np.array(test_image)
+    # Convert the image to numpy array for easier processing
+    img_array = np.array(fused_image)
     
-    # Create a copy of the target image to draw on
-    highlighted_image = target_image.copy()
-    draw = ImageDraw.Draw(highlighted_image)
+    # Get image dimensions
+    height, width = img_array.shape[:2]
     
-    # Handle different image modes
-    if len(test_array.shape) == 2:  # Grayscale image
-        non_black_mask = test_array > 0
-    elif len(test_array.shape) == 3:  # RGB or RGBA image
-        non_black_mask = np.any(test_array > 0, axis=2)
+    # Calculate sector dimensions
+    sector_height = height // num_sectors
+    sector_width = width // num_sectors
+    
+    # Track the highest density sector
+    max_density = 0
+    max_sector = (0, 0)  # (row, col)
+    
+    # Define threshold for non-black pixels (adjust as needed)
+    # For grayscale images
+    if len(img_array.shape) == 2:
+        threshold = 10  # Any pixel value above this is considered non-black
+        
+        # Analyze each sector
+        for row in range(num_sectors):
+            for col in range(num_sectors):
+                # Define sector boundaries
+                start_y = row * sector_height
+                end_y = start_y + sector_height
+                start_x = col * sector_width
+                end_x = start_x + sector_width
+                
+                # Extract sector
+                sector = img_array[start_y:end_y, start_x:end_x]
+                
+                # Count non-black pixels
+                non_black_count = np.sum(sector > threshold)
+                
+                # Calculate density (percentage of non-black pixels)
+                density = non_black_count / (sector_height * sector_width)
+                
+                # Update if this sector has higher density
+                if density > max_density:
+                    max_density = density
+                    max_sector = (row, col)
+    
+    # For RGB images
     else:
-        raise ValueError("Unsupported image mode")
+        threshold = 10  # Any pixel where sum of RGB values is above this is considered non-black
+        
+        # Analyze each sector
+        for row in range(num_sectors):
+            for col in range(num_sectors):
+                # Define sector boundaries
+                start_y = row * sector_height
+                end_y = start_y + sector_height
+                start_x = col * sector_width
+                end_x = start_x + sector_width
+                
+                # Extract sector
+                sector = img_array[start_y:end_y, start_x:end_x]
+                
+                # Count non-black pixels (sum of RGB channels > threshold)
+                if len(img_array.shape) == 3:
+                    non_black_count = np.sum(np.sum(sector, axis=2) > threshold)
+                else:
+                    non_black_count = np.sum(sector > threshold)
+                
+                # Calculate density
+                density = non_black_count / (sector_height * sector_width)
+                
+                # Update if this sector has higher density
+                if density > max_density:
+                    max_density = density
+                    max_sector = (row, col)
     
-    # If no non-black pixels found, return the original image
-    if not np.any(non_black_mask):
-        return highlighted_image
+    # Create a copy of the original image to draw on
+    result_image = draw_image
+    draw = ImageDraw.Draw(draw_image)
     
-    # Label connected regions
-    labeled_array, num_features = ndimage.label(non_black_mask)
+    # Get coordinates of the highest density sector
+    row, col = max_sector
+    start_y = row * sector_height
+    end_y = start_y + sector_height - 1
+    start_x = col * sector_width
+    end_x = start_x + sector_width - 1
     
-    # If no features found, return the original image
-    if num_features == 0:
-        return highlighted_image
+    # Draw border around the sector
+    for i in range(border_width):
+        draw.rectangle(
+            [(start_x-i, start_y-i), (end_x+i, end_y+i)],
+            outline=border_color
+        )
     
-    # Find the size of each region
-    region_sizes = np.bincount(labeled_array.ravel())[1:]
-    
-    # Find the label of the largest region
-    largest_region_label = np.argmax(region_sizes) + 1
-    
-    # Create a mask for the largest region
-    largest_region_mask = labeled_array == largest_region_label
-    
-    # Find the bounding box of the largest region
-    region_coords = np.column_stack(np.where(largest_region_mask))
-    min_y, min_x = region_coords.min(axis=0)
-    max_y, max_x = region_coords.max(axis=0)
-    
-    # Add a small padding
-    padding = 3
-    min_y = max(0, min_y - padding)
-    min_x = max(0, min_x - padding)
-    max_y = min(target_image.height - 1, max_y + padding)
-    max_x = min(target_image.width - 1, max_x + padding)
-    
-    # Draw a red rectangle border
-    draw.rectangle(
-        [(min_x, min_y), (max_x, max_y)], 
-        outline=border_color, 
-        width=border_width
-    )
-    
-    return highlighted_image
+    return result_image
 
 def chroma_key(foreground, background, key_color=(0, 0, 0), tolerance=30):
     """
@@ -319,7 +351,7 @@ def detect(control:str, current:str):
     # imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
     imgarr["Fused"].save("edgetest", "png")
     print(np.array(imgarr["Fused"]).astype(int))
-    imgarr["Highlighted"] = highlight_stain(imgarr["Fused"], imgarr["Original"])
+    imgarr["Highlighted"] = highlight_stain(imgarr["Fused"], imgarr["Current"], 5)
     image_display(imgarr)
 
 detect("imagedata/blue.jpg","imagedata/bluestain.jpg")

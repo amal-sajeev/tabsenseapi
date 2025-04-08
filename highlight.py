@@ -76,6 +76,114 @@ def highlight_non_black_concentrated_region(test_image, target_image, border_wid
     
     return highlighted_image
 
+def find_highest_density_sector(fused_image, num_sectors=5, border_color=(0, 0, 255), border_width=3):
+    """
+    Divides the image into square sectors and finds the one with the highest concentration of non-black pixels.
+    
+    Args:
+        fused_image: PIL Image - The input image to analyze
+        num_sectors: int - Number of sectors to divide the image into (both horizontally and vertically)
+        border_color: tuple - RGB color for the border (default: blue)
+        border_width: int - Width of the border in pixels
+        
+    Returns:
+        PIL Image with a border drawn around the sector with highest non-black pixel concentration
+    """
+    import numpy as np
+    from PIL import Image, ImageDraw
+    
+    # Convert the image to numpy array for easier processing
+    img_array = np.array(fused_image)
+    
+    # Get image dimensions
+    height, width = img_array.shape[:2]
+    
+    # Calculate sector dimensions
+    sector_height = height // num_sectors
+    sector_width = width // num_sectors
+    
+    # Track the highest density sector
+    max_density = 0
+    max_sector = (0, 0)  # (row, col)
+    
+    # Define threshold for non-black pixels (adjust as needed)
+    # For grayscale images
+    if len(img_array.shape) == 2:
+        threshold = 10  # Any pixel value above this is considered non-black
+        
+        # Analyze each sector
+        for row in range(num_sectors):
+            for col in range(num_sectors):
+                # Define sector boundaries
+                start_y = row * sector_height
+                end_y = start_y + sector_height
+                start_x = col * sector_width
+                end_x = start_x + sector_width
+                
+                # Extract sector
+                sector = img_array[start_y:end_y, start_x:end_x]
+                
+                # Count non-black pixels
+                non_black_count = np.sum(sector > threshold)
+                
+                # Calculate density (percentage of non-black pixels)
+                density = non_black_count / (sector_height * sector_width)
+                
+                # Update if this sector has higher density
+                if density > max_density:
+                    max_density = density
+                    max_sector = (row, col)
+    
+    # For RGB images
+    else:
+        threshold = 10  # Any pixel where sum of RGB values is above this is considered non-black
+        
+        # Analyze each sector
+        for row in range(num_sectors):
+            for col in range(num_sectors):
+                # Define sector boundaries
+                start_y = row * sector_height
+                end_y = start_y + sector_height
+                start_x = col * sector_width
+                end_x = start_x + sector_width
+                
+                # Extract sector
+                sector = img_array[start_y:end_y, start_x:end_x]
+                
+                # Count non-black pixels (sum of RGB channels > threshold)
+                if len(img_array.shape) == 3:
+                    non_black_count = np.sum(np.sum(sector, axis=2) > threshold)
+                else:
+                    non_black_count = np.sum(sector > threshold)
+                
+                # Calculate density
+                density = non_black_count / (sector_height * sector_width)
+                
+                # Update if this sector has higher density
+                if density > max_density:
+                    max_density = density
+                    max_sector = (row, col)
+    
+    # Create a copy of the original image to draw on
+    result_image = fused_image.copy()
+    draw = ImageDraw.Draw(result_image)
+    
+    # Get coordinates of the highest density sector
+    row, col = max_sector
+    start_y = row * sector_height
+    end_y = start_y + sector_height - 1
+    start_x = col * sector_width
+    end_x = start_x + sector_width - 1
+    
+    # Draw border around the sector
+    for i in range(border_width):
+        draw.rectangle(
+            [(start_x-i, start_y-i), (end_x+i, end_y+i)],
+            outline=border_color
+        )
+    
+    return result_image
+
 # Example usage
 def test_concentrated_border_detection():
     # Create a black test image with multiple white regions
