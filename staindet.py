@@ -4,13 +4,14 @@ from PIL import Image, ImageFilter, ImageEnhance, ImageOps, ImageDraw
 import matplotlib.pyplot as plt
 from scipy import ndimage
 
-def detect_and_crop_color_border(image, color='blue'):
+def detect_and_crop_color_border(image, color='blue', shape='auto'):
     """
-    Detect and crop colored border with improved robustness.
+    Detect and crop colored border with improved robustness for various shapes.
     
     Args:
         image (PIL.Image): Input image
         color (str): Color of the border to detect
+        shape (str): Shape of the border ('auto', 'rectangle', 'circle', 'oval')
     
     Returns:
         PIL.Image: Cropped image
@@ -28,14 +29,32 @@ def detect_and_crop_color_border(image, color='blue'):
     color_ranges = {
         "green": ([35, 50, 50], [85, 255, 255]),
         "blue": ([100, 50, 50], [140, 255, 255]),
-        "yellow": ([20, 50, 50], [30, 255, 255])
+        "yellow": ([20, 50, 50], [30, 255, 255]),
+        "red1": ([0, 50, 50], [10, 255, 255]),  # Red spans across 0 degrees in HSV
+        "red2": ([170, 50, 50], [180, 255, 255])  # Need to check both ranges
     }
     
     # Get color range
-    lower, upper = color_ranges.get(color, color_ranges['blue'])
+    if color == "red":
+        # For red, we need to combine two masks
+        lower1, upper1 = color_ranges["red1"]
+        lower2, upper2 = color_ranges["red2"]
+        
+        # Create masks for both red ranges
+        color_mask1 = cv2.inRange(hsv, np.array(lower1), np.array(upper1))
+        color_mask2 = cv2.inRange(hsv, np.array(lower2), np.array(upper2))
+        
+        # Combine the masks
+        color_mask = cv2.bitwise_or(color_mask1, color_mask2)
+    else:
+        # For other colors
+        lower, upper = color_ranges.get(color, color_ranges['blue'])
+        color_mask = cv2.inRange(hsv, np.array(lower), np.array(upper))
     
-    # Create mask for specified color
-    color_mask = cv2.inRange(hsv, np.array(lower), np.array(upper))
+    # Apply morphological operations to clean up the mask
+    kernel = np.ones((5, 5), np.uint8)
+    color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, kernel)
+    color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, kernel)
     
     # Find contours of colored border
     contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -46,14 +65,96 @@ def detect_and_crop_color_border(image, color='blue'):
     # Find the largest contour (presumably the border)
     border_contour = max(contours, key=cv2.contourArea)
     
-    # Get convex hull to smooth out irregularities
-    hull = cv2.convexHull(border_contour)
-    
     # Create a mask for the entire image
     mask = np.zeros(cv_image.shape[:2], dtype=np.uint8)
     
-    # Fill the convex hull on the mask
-    cv2.fillPoly(mask, [hull], 255)
+    # Handle different shapes
+    if shape == 'auto':
+        # Improved shape detection
+        
+        # Calculate shape metrics
+        area = cv2.contourArea(border_contour)
+        perimeter = cv2.arcLength(border_contour, True)
+        
+        # Fit an enclosing circle
+        (center_x, center_y), radius = cv2.minEnclosingCircle(border_contour)
+        circle_area = np.pi * radius * radius
+        
+        # Fit an ellipse (if possible)
+        if len(border_contour) >= 5:
+            ellipse = cv2.fitEllipse(border_contour)
+            ellipse_axes = ellipse[1]  # Major and minor axes
+            ellipse_area = np.pi * ellipse_axes[0]/2 * ellipse_axes[1]/2
+            
+            # Calculate aspect ratio of the ellipse
+            aspect_ratio = max(ellipse_axes) / min(ellipse_axes)
+        else:
+            ellipse = None
+            ellipse_area = float('inf')
+            aspect_ratio = float('inf')
+        
+        # Calculate circularity: 4*pi*area/perimeter^2
+        # Perfect circle has circularity of 1
+        circularity = 4 * np.pi * area / (perimeter * perimeter) if perimeter > 0 else 0
+        
+        # Calculate how well the contour fits a circle
+        circle_similarity = area / circle_area if circle_area > 0 else 0
+        
+        # Determine shape based on metrics
+        if circularity > 0.85 and circle_similarity > 0.9:
+            # It's likely a circle
+            center = (int(center_x), int(center_y))
+            radius = int(radius)
+            cv2.circle(mask, center, radius, 255, -1)
+            print("Detected shape: Circle")
+            
+        elif ellipse is not None and aspect_ratio < 1.5 and area / ellipse_area > 0.9:
+            # It's likely an oval/ellipse that's not too elongated
+            cv2.ellipse(mask, ellipse, 255, -1)
+            print("Detected shape: Oval/Ellipse")
+            
+        else:
+            # It's likely a polygon or irregular shape
+            # Try to approximate the polygon
+            epsilon = 0.02 * perimeter
+            approx = cv2.approxPolyDP(border_contour, epsilon, True)
+            
+            if len(approx) == 4:
+                # It might be a rectangle
+                cv2.fillPoly(mask, [approx], 255)
+                print("Detected shape: Rectangle/Square")
+            else:
+                # Use convex hull for irregular shapes
+                hull = cv2.convexHull(border_contour)
+                cv2.fillPoly(mask, [hull], 255)
+                print(f"Detected shape: Irregular polygon with {len(approx)} points")
+    
+    elif shape == 'circle':
+        # Fit a circle to the contour
+        (x, y), radius = cv2.minEnclosingCircle(border_contour)
+        center = (int(x), int(y))
+        radius = int(radius)
+        cv2.circle(mask, center, radius, 255, -1)
+    
+    elif shape == 'oval' or shape == 'ellipse':
+        # Fit an ellipse to the contour
+        if len(border_contour) >= 5:  # Need at least 5 points to fit ellipse
+            ellipse = cv2.fitEllipse(border_contour)
+            cv2.ellipse(mask, ellipse, 255, -1)
+        else:
+            # Fallback to convex hull if not enough points
+            hull = cv2.convexHull(border_contour)
+            cv2.fillPoly(mask, [hull], 255)
+    
+    elif shape == 'rectangle':
+        # Get bounding rectangle
+        x, y, w, h = cv2.boundingRect(border_contour)
+        cv2.rectangle(mask, (x, y), (x + w, y + h), 255, -1)
+    
+    else:  # Default: use contour as is
+        # Use convex hull for smoother result
+        hull = cv2.convexHull(border_contour)
+        cv2.fillPoly(mask, [hull], 255)
     
     # Bitwise AND to keep only the area inside the border
     result = cv2.bitwise_and(cv_image, cv_image, mask=mask)
@@ -64,20 +165,21 @@ def detect_and_crop_color_border(image, color='blue'):
     # Convert back to PIL Image
     return Image.fromarray(result_rgb)
 
-def process_image(image, color='blue'):
+def process_image(image, color='blue', shape='auto'):
     """
     Process an image by detecting and cropping to a colored border.
     
     Args:
         image (PIL.Image): Input image
         color (str, optional): Border color to detect. Defaults to 'blue'.
+        shape (str, optional): Shape of the border to detect. Defaults to 'auto'.
     
     Returns:
         PIL.Image: Cropped image
     """
     try:
         # Crop to colored border
-        cropped_image = detect_and_crop_color_border(image, color)
+        cropped_image = detect_and_crop_color_border(image, color, shape)
         
         return cropped_image
     
@@ -85,17 +187,20 @@ def process_image(image, color='blue'):
         print(f"Error processing image: {e}")
         return image
 
-def _open_image(image_path:str, use_border : bool = False, color : str = "blue"):
+def _open_image(image_path:str, use_border : bool = False, color : str = "blue", shape : str = "auto"):
     """Opens an image from disk and converts it into a PIL Image array.
 
     Args:
         image_path (str): Path to the image
+        use_border (bool, optional): Whether to detect and crop to border. Defaults to False.
+        color (str, optional): Color of the border to detect. Defaults to "blue".
+        shape (str, optional): Shape of the border ('auto', 'rectangle', 'circle', 'oval'). Defaults to "auto".
     Returns:
         PIL Image: A float32 Numpy Image array
     """
     img = Image.open(image_path)
     if use_border:
-        img = process_image(img)
+        img = process_image(img, color, shape)
     return(img)
 
 def makeneg(img_array,alpha:float = 0.5):
@@ -178,9 +283,6 @@ def highlight_stain(fused_image, draw_image, num_sectors=5, border_color=(255, 0
     Returns:
         PIL Image with a border drawn around the sector with highest non-black pixel concentration
     """
-    import numpy as np
-    from PIL import Image, ImageDraw
-    
     # Convert the image to numpy array for easier processing
     img_array = np.array(fused_image)
     
@@ -254,8 +356,8 @@ def highlight_stain(fused_image, draw_image, num_sectors=5, border_color=(255, 0
                     max_sector = (row, col)
     
     # Create a copy of the original image to draw on
-    result_image = draw_image
-    draw = ImageDraw.Draw(draw_image)
+    result_image = draw_image.copy()
+    draw = ImageDraw.Draw(result_image)
     
     # Get coordinates of the highest density sector
     row, col = max_sector
@@ -342,16 +444,19 @@ def image_display(arrimg : dict):
     plt.tight_layout()
     plt.show()
 
-def detect(control:str, current:str):
+def detect(control:str, current:str, color:str="blue", shape:str="auto"):
     #Import original image
-    imgarr = {"Original":_open_image(control,True,"blue")}
+    imgarr = {"Original":_open_image(control, True, color, shape)}
     imgarr["Negative"]= makeneg(imgarr["Original"])
-    imgarr["Current"] = _open_image(current,True,"blue")
+    imgarr["Current"] = _open_image(current, True, color, shape)
     imgarr["Fused"]= fuse_image(imgarr["Current"], imgarr["Negative"], 0.5)
     # imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
     imgarr["Fused"].save("edgetest", "png")
-    print(np.array(imgarr["Fused"]).astype(int))
-    imgarr["Highlighted"] = highlight_stain(imgarr["Fused"], imgarr["Current"], 5)
+    imgarr["Highlighted"] = highlight_stain(imgarr["Fused"], imgarr["Current"], 5, border_width=5)
     image_display(imgarr)
 
-detect("imagedata/blue.jpg","imagedata/bluestain.jpg")
+# Example usage:
+# detect("imagedata/thinbluecirc.png", "imagedata/thinbluecircstain.png", "thinbluecirc", "circle")
+# detect("imagedata/thinbluecirc.png", "imagedata/thinbluecircstain.png", "thinbluecirc", "oval")
+# Or use auto detection:
+detect("imagedata/thinbluecirc.png", "imagedata/thinbluecircstain.png", "thinbluecirc", "auto")
