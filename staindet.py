@@ -425,17 +425,21 @@ def chroma_key(foreground, background, key_color=(0, 0, 0), tolerance=30):
     
     return composited
 
-def image_display(arrimg : dict):
+def image_display(arrimg : dict, colno: int, figsize:tuple = (15,5)):
     """Given data arrays with the title of the image, create a window displaying the images with their titles in a grid.
 
     Args:
         arrimg (dict): A dictionary of the data arrays with the image titles as the keys.
+        colno (int): Number of columns,
+        figsize (tuple): Size of the display window, as (width,height),
     """
-    plt.figure(figsize=(15,5))
-    columns = len(arrimg.keys())
+    import math
+    plt.figure(figsize=figsize)
+    columns = colno
+    rows = math.ceil(len(arrimg.keys())/colno)
     pos = 1 
     for key in arrimg.keys():
-        plt.subplot(1,columns,pos)
+        plt.subplot(rows,columns,pos)
         plt.imshow(arrimg[key])
         plt.title(key)
         plt.axis("off")
@@ -446,14 +450,24 @@ def image_display(arrimg : dict):
 
 def detect(control:str, current:str, color:str="blue", shape:str="auto"):
     #Import original image
-    imgarr = {"Original":_open_image(control, True, color, shape)}
-    imgarr["Negative"]= makeneg(imgarr["Original"])
-    imgarr["Current"] = _open_image(current, True, color, shape)
-    imgarr["Fused"]= fuse_image(imgarr["Current"], imgarr["Negative"], 0.5)
-    # imgarr["FusedEdge"] = imgarr["Fused"].filter(ImageFilter.FIND_EDGES)
-    imgarr["Fused"].save("edgetest", "png")
-    imgarr["Highlighted"] = highlight_stain(imgarr["Fused"], imgarr["Current"], 5, border_width=5)
-    image_display(imgarr)
+    imgarr = {"Control":_open_image(control, False)}
+    imgarr["Current"] = _open_image(current, False)
+    imgarr["Cropped Control"] = process_image(imgarr["Control"], color, shape)
+    imgarr["Cropped Current"] = process_image(imgarr["Current"], color, shape)
+    imgarr["Fused"] = fuse_image(
+        original= imgarr["Cropped Current"],
+        negative= makeneg(imgarr["Cropped Control"]),
+        alpha=0.5
+    )
+    imgarr["Highlighted Result"] = highlight_stain(
+        fused_image=imgarr["Fused"],
+        draw_image=imgarr["Current"],
+        num_sectors=5,
+        border_color=(255,0,0),
+        border_width=4
+    )
+    image_display(imgarr,2,(8,8))
+
 
 # Example usage:
 # detect("imagedata/thinbluecirc.png", "imagedata/thinbluecircstain.png", "thinbluecirc", "circle")
