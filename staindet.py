@@ -473,13 +473,15 @@ def detect(control:str, current:str, color:str="blue", shape:str="auto"):
         negative= makeneg(imgarr["Cropped Control"]),
         alpha=0.5
     )
-    imgarr["Highlighted Result"] = highlight_stain(
-        fused_image=imgarr["Fused"],
-        draw_image=imgarr["Current"],
-        num_sectors=5,
-        border_color=(255,0,0),
-        border_width=4
-    )
+    detected = detect_stain(imgarr["Fused"],1)
+    if detected:
+        imgarr["Highlighted Result"] = highlight_stain(
+            fused_image=imgarr["Fused"],
+            draw_image=imgarr["Current"],
+            num_sectors=5,
+            border_color=(255,0,0),
+            border_width=4
+        )
     image_display(imgarr,2,(8,8), detected= detect_stain(imgarr["Fused"],1))
 
 
