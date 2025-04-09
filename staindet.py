@@ -425,27 +425,41 @@ def chroma_key(foreground, background, key_color=(0, 0, 0), tolerance=30):
     
     return composited
 
-def image_display(arrimg : dict, colno: int, figsize:tuple = (15,5)):
+def image_display(arrimg: dict, colno: int, figsize: tuple = (15, 5), detected: bool = False):
     """Given data arrays with the title of the image, create a window displaying the images with their titles in a grid.
+    Displays an optional text at the bottom middle of the figure.
 
     Args:
         arrimg (dict): A dictionary of the data arrays with the image titles as the keys.
-        colno (int): Number of columns,
-        figsize (tuple): Size of the display window, as (width,height),
+        colno (int): Number of columns.
+        figsize (tuple): Size of the display window, as (width, height).
+        display_text (str): Text to display at the bottom middle of the layout.
     """
     import math
-    plt.figure(figsize=figsize)
+    import matplotlib.pyplot as plt
+    
+    if detected:
+        display_text = "STAIN DETECTED"
+    else:
+        display_text = "CLEAN"
+
+    fig = plt.figure(figsize=figsize)
     columns = colno
-    rows = math.ceil(len(arrimg.keys())/colno)
-    pos = 1 
+    rows = math.ceil(len(arrimg.keys()) / colno)
+    pos = 1
+    
     for key in arrimg.keys():
-        plt.subplot(rows,columns,pos)
+        plt.subplot(rows, columns, pos)
         plt.imshow(arrimg[key])
         plt.title(key)
         plt.axis("off")
         pos += 1
     
-    plt.tight_layout()
+    # Add the text at the bottom middle of the figure
+    if display_text:
+        fig.text(0.5, 0.01, display_text, ha='center', va='bottom', fontsize=10)
+    
+    plt.tight_layout(rect=[0, 0.03, 1, 0.97])  # Adjust layout to make room for the text
     plt.show()
 
 def detect(control:str, current:str, color:str="blue", shape:str="auto"):
@@ -466,7 +480,7 @@ def detect(control:str, current:str, color:str="blue", shape:str="auto"):
         border_color=(255,0,0),
         border_width=4
     )
-    image_display(imgarr,2,(8,8))
+    image_display(imgarr,2,(8,8), detected= detect_stain(imgarr["Fused"],1))
 
 
 # Example usage:
