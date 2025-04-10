@@ -461,7 +461,7 @@ def image_display(arrimg: dict, colno: int, figsize: tuple = (15, 5), detected: 
     
     plt.tight_layout(rect=[0, 0.03, 1, 0.97])  # Adjust layout to make room for the text
     plt.show()
-
+ 
 def detect(control:str, current:str, color:str="blue", shape:str="auto"):
     #Import original image
     imgarr = {"Control":_open_image(control, False)}
@@ -482,11 +482,12 @@ def detect(control:str, current:str, color:str="blue", shape:str="auto"):
             border_color=(255,0,0),
             border_width=4
         )
-    image_display(imgarr,2,(8,8), detected= detect_stain(imgarr["Fused"],1))
+    image_display(imgarr,2,(5,7), detected= detect_stain(imgarr["Fused"],1))
 
 
 # Example usage:
-# detect("imagedata/thinbluecirc.png", "imagedata/thinbluecircstain.png", "thinbluecirc", "circle")
-# detect("imagedata/thinbluecirc.png", "imagedata/thinbluecircstain.png", "thinbluecirc", "oval")
+# detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "circle")
+# detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "oval")
 # Or use auto detection:
-detect("imagedata/thinbluecirc.png", "imagedata/thinbluecircstain.png", "thinbluecirc", "auto")
+# detect("imagedata/bluesplit.png", "imagedata/bluesplit.png", "bluesplit", "auto")
+print(type(type(_open_image("imagedata/bluesplit.png"))))

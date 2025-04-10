@@ -154,7 +154,7 @@ def find_highest_density_sector(fused_image, num_sectors=5, border_color=(0, 0, 
                 if len(img_array.shape) == 3:
                     non_black_count = np.sum(np.sum(sector, axis=2) > threshold)
                 else:
-                    non_black_count = np.sum(sector > threshold)
+                    non_black_count = np.sum(sector > threshold) 
                 
                 # Calculate density
                 density = non_black_count / (sector_height * sector_width)
