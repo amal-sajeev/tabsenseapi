@@ -6,7 +6,7 @@ from PIL import Image
 app = FastAPI()
 
 @app.get("/detect")
-def detectstain(control, current, color = "blue", shape= "auto"):
+def detectstain(control, current, crop:bool=True, color = "blue", shape= "auto", format:str="png"):
 
     #Only for use after module works with pil image inputs.
     # if type(control) == str:
@@ -14,4 +14,13 @@ def detectstain(control, current, color = "blue", shape= "auto"):
     # if type(current) == str:
     #     current = staindet._open_image(current)
 
-    staindet.detect(control, current, color, shape)
+    try:
+        return(staindet.detect(
+            control = f"imagedata/{control}.{format}",
+            current = f"imagedata/{current}.{format}",
+            crop = crop,
+            color = color,
+            shape = shape)
+            )
+    except Exception as e:
+        return(e)

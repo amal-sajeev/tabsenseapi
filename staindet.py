@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image, ImageFilter, ImageEnhance, ImageOps, ImageDraw
 import matplotlib.pyplot as plt
 from scipy import ndimage
+from typing import Union
 
 def detect_and_crop_color_border(image, color='blue', shape='auto'):
     """
@@ -462,17 +463,26 @@ def image_display(arrimg: dict, colno: int, figsize: tuple = (15, 5), detected: 
     plt.tight_layout(rect=[0, 0.03, 1, 0.97])  # Adjust layout to make room for the text
     plt.show()
  
-def detect(control:str, current:str, color:str="blue", shape:str="auto"):
+def detect(control:str, current:str, crop:bool=True, color:str="blue", shape:str="auto", displayresults:bool=True):
     #Import original image
     imgarr = {"Control":_open_image(control, False)}
     imgarr["Current"] = _open_image(current, False)
-    imgarr["Cropped Control"] = process_image(imgarr["Control"], color, shape)
-    imgarr["Cropped Current"] = process_image(imgarr["Current"], color, shape)
-    imgarr["Fused"] = fuse_image(
-        original= imgarr["Cropped Current"],
-        negative= makeneg(imgarr["Cropped Control"]),
-        alpha=0.5
-    )
+    if crop:
+        imgarr["Cropped Control"] = process_image(imgarr["Control"], color, shape)
+        imgarr["Cropped Current"] = process_image(imgarr["Current"], color, shape)
+        imgarr["Fused"] = fuse_image(
+            original= imgarr["Cropped Current"],
+            negative= makeneg(imgarr["Cropped Control"]),
+            alpha=0.5
+        )
+    else:
+        imgarr["Control"] = process_image(imgarr["Control"], color, shape)
+        imgarr["Current"] = process_image(imgarr["Current"], color, shape)
+        imgarr["Fused"] = fuse_image(
+            original= imgarr["Current"],
+            negative= makeneg(imgarr["Control"]),
+            alpha=0.5
+        )
     detected = detect_stain(imgarr["Fused"],1)
     if detected:
         imgarr["Highlighted Result"] = highlight_stain(
@@ -482,12 +492,13 @@ def detect(control:str, current:str, color:str="blue", shape:str="auto"):
             border_color=(255,0,0),
             border_width=4
         )
-    image_display(imgarr,2,(5,7), detected= detect_stain(imgarr["Fused"],1))
+    if displayresults:
+        image_display(imgarr,2,(5,7), detected= detect_stain(imgarr["Fused"],1))
+    return(str(detected))
 
-
-# Example usage:
-# detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "circle")
-# detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "oval")
-# Or use auto detection:
-# detect("imagedata/bluesplit.png", "imagedata/bluesplit.png", "bluesplit", "auto")
-print(type(type(_open_image("imagedata/bluesplit.png"))))
+def __main__():
+    # Example usage:
+    # detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "circle")
+    # detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "oval")
+    # Or use auto detection:
+    detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "auto")

@@ -156,15 +156,14 @@ def find_highest_density_sector(fused_image, num_sectors=5, border_color=(0, 0, 
                 else:
                     non_black_count = np.sum(sector > threshold) 
                 
-                # Calculate density
-                density = non_black_count / (sector_height * sector_width)
+                # Calculate density 
                 
                 # Update if this sector has higher density
                 if density > max_density:
                     max_density = density
                     max_sector = (row, col)
     
-    # Create a copy of the original image to draw on
+    # Create a copy of the original image to draw on 
     result_image = fused_image.copy()
     draw = ImageDraw.Draw(result_image)
     
