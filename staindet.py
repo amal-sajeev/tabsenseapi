@@ -496,7 +496,7 @@ def detect(control:str, current:str, crop:bool=True, color:str="blue", shape:str
         image_display(imgarr,2,(5,7), detected= detect_stain(imgarr["Fused"],1))
     return(str(detected))
 
-def __main__():
+if __name__ == "__main__":
     # Example usage:
     # detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "circle")
     # detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "oval")

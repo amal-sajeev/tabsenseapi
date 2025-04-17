@@ -2,12 +2,16 @@ from fastapi import FastAPI, HTTPException, File, UploadFile,status
 import staindet
 from typing import Union
 from PIL import Image
+import pymongo, json, uuid
+from datetime import datetime
 
 app = FastAPI()
 
 @app.get("/detect")
-def detectstain(control, current, crop:bool=True, crop_color = "blue", crop_shape= "auto", format:str="png"):
+def detectstain(control, current, sector_num:int, crop:bool=True, crop_color = "blue", crop_shape= "auto", format:str="png"):
     """Endpoint that reads a control image, the current image, and by comparing the two detects whether there's a stain on the current surface. If the tables aren't captured properly, as long as there's a coloured border on the surfaces, the crop parameter can be used to isolate the surface.
+
+
 
     Args:
         control (string): Filename of control image, which is the clean surface under the current conditions.
@@ -24,6 +28,25 @@ def detectstain(control, current, crop:bool=True, crop_color = "blue", crop_shap
     #     current = staindet._open_image(current)
 
     try:
+        
+        current_results = {
+            "timestamp" : current.split("/")[-1].split(".")[0],
+            "detections" : 0,
+            "sectors" : {}
+        }
+
+        for i in range(sector_num):
+            current_results[str(i)] = {
+                "detected": staindet.detect(
+            control = f"imagedata/{control}.{format}",
+            current = f"imagedata/{current}.{format}",
+            crop = crop,
+            color = crop_color,
+            shape = crop_shape),
+                "highlight": current.split(".")[0]+"_highlight"+".png",
+                "control": control
+            }
+
         return(staindet.detect(
             control = f"imagedata/{control}.{format}",
             current = f"imagedata/{current}.{format}",
@@ -34,3 +57,5 @@ def detectstain(control, current, crop:bool=True, crop_color = "blue", crop_shap
     except Exception as e:
         return(e)
 
+
+@app.

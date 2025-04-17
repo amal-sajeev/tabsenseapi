@@ -147,7 +147,7 @@ def find_highest_density_sector(fused_image, num_sectors=5, border_color=(0, 0, 
                 start_x = col * sector_width
                 end_x = start_x + sector_width
                 
-                # Extract sector
+                # Extract sector 
                 sector = img_array[start_y:end_y, start_x:end_x]
                 
                 # Count non-black pixels (sum of RGB channels > threshold)
