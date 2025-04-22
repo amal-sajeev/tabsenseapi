@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile,status
+from fastapi import FastAPI, Body, HTTPException, File, UploadFile,status
 import staindet
-from typing import Union
+from typing import Union, Annotated
 from PIL import Image
 import pymongo, json, uuid
 from datetime import datetime
@@ -12,8 +12,8 @@ mongocreds = os.getenv("mongocred")
 client = pymongo.MongoClient(f"mongodb://{mongocreds}@localhost:27017")
 db=client["tablesense"]
 
-@app.get("{client}/detect")
-def detectstain(control, current, sector_num:int, room, crop:bool=True, crop_color = "blue", crop_shape= "auto", format:str="png"):
+@app.get("/detect")
+def detectstain(control, current, sector_num:int, client, room, crop:bool=True, crop_color = "blue", crop_shape= "auto", format:str="png"):
     """Endpoint that reads a control image, the current image, and by comparing the two detects whether there's a stain on the current surface. If the tables aren't captured properly, as long as there's a coloured border on the surfaces, the crop parameter can be used to isolate the surface.
 
     Args:
@@ -43,7 +43,8 @@ def detectstain(control, current, sector_num:int, room, crop:bool=True, crop_col
     try:
 
         current_results = {
-            "timestamp" : control.split("/")[-1].split(".")[0],
+            "id" : control.split("/")[-1].split(".")[0],
+            "timestamp": datetime.now(timezone.utc()),
             "detections" : 0,
             "sectors" : {}
         }
@@ -58,7 +59,7 @@ def detectstain(control, current, sector_num:int, room, crop:bool=True, crop_col
             color = crop_color,
             shape = crop_shape,
             displayresults= False),
-                "highlight": current.split(".")[0]+"_highlight"+".png",
+                "highlight": current_results['id']+"_highlight"+".png",
                 "control": control
             }
 
@@ -70,8 +71,17 @@ def detectstain(control, current, sector_num:int, room, crop:bool=True, crop_col
         return(e)
 
 
-@app.post("{client}/report")
-def getreport(room, start="", end=""):
+@app.get("/report")
+def getreport(room, client, start:Annotated[datetime,Body()], end:Annotated[datetime,Body()]):
     """
     Gets all data in a date range.
+
+    Args:
+
+        room (String) = Name of the room to get reports from.
+        start (String) = Date of beginning of date range.
+        end (String) = Date of ending of date range.
     """
+    print(f"{start}\n{end}")
+    return(db[f'{client}-room'].find({"timestamp":{"$gte":start,"$lt":end}}))
+    
