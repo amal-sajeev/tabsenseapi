@@ -18,9 +18,9 @@ def detectstain(control, current, sector_num:int, client, room, crop:bool=True, 
 
     Args:
     
-        control (string): Filename of control image, which is the clean surface under the current conditions.
+        control (string): UUID of control images from all sectors, which is the clean surface under the current conditions.
         
-        current (string): Filename of current image, the most recent image of the surface.
+        current (string): UUID of current images from all sectors, the most recent image of the surface.
         
         sector_num (int): Number of sectors in the room.
         
@@ -40,49 +40,61 @@ def detectstain(control, current, sector_num:int, client, room, crop:bool=True, 
     # if type(current) == str:
     #     current = staindet._open_image(current)
 
-     
-    try:
-
-        current_results = {
-            "id" : control.split("/")[-1].split(".")[0],
-            "timestamp": datetime.now(timezone.utc),
-            "detections" : 0,
-            "sectors" : {}
-        }
-        
-        for i in range(sector_num):
-            curcontrol = control
+    # try:
+    current_results = {
+        "id" : control.split("/")[-1].split(".")[0],
+        "timestamp": datetime.now(timezone.utc),
+        "detections" : 0,
+        "sectors" : {}
+    }
+    
+    for i in range(1,sector_num+1):
+        print(i)
+        if staindet.detect(
+        control = f"imagedata/control/{control}-{i}.{format}",
+        current = f"imagedata/captures/{current}-{i}.{format}",
+        crop = crop,
+        color = crop_color,
+        shape = crop_shape,
+        displayresults= False,
+        savehighlight=f"Sector_{current_results['id']}_highlight"):
+            
             current_results["sectors"][str(i)] = {
-                "detected": staindet.detect(
-            control = f"imagedata/{control}.{format}",
-            current = f"imagedata/{current}.{format}",
-            crop = crop,
-            color = crop_color,
-            shape = crop_shape,
-            displayresults= False),
-                "highlight": current_results['id']+"_highlight"+".png",
+                "highlight": f"Sector_{current_results['id']}_highlight.png",
                 "control": control
             }
 
-        db[f'{client}-{room}'].insert_one(current_results)
-        return(current_results['sectors'])
+    current_results["detections"] = len(current_results["sectors"].keys())
+    db[f'{client}-{room}'].insert_one(current_results)
 
-    except Exception as e:
-        return(e)
+    return(current_results['sectors'])
+
+    # except Exception as e:
+    #     return(e)
 
 
 @app.post("/report")
-def getreport(room, client, start:Annotated[datetime,Body()], end:Annotated[datetime,Body()]):
+def getreport(room, client, start: Annotated[datetime, Body()] = None, end: Annotated[datetime, Body()] = None):
     """
     Gets all data in a date range.
 
     Args:
-
         room (String) = Name of the room to get reports from.
-        start (String) = Date of beginning of date range.
-        end (String) = Date of ending of date range.
+        client (String) = Name of the client.
+        start (String) = Date of beginning of date range. Optional.
+        end (String) = Date of ending of date range. Optional.
     """
     try:
-        return([i for i in db[f'{client}-{room}'].find({"timestamp":{"$gte":start,"$lt":end}},{"_id":False})])
+        # Build query based on provided parameters
+        query = {}
+        if start is not None or end is not None:
+            query["timestamp"] = {}
+            if start is not None:
+                query["timestamp"]["$gte"] = start
+            if end is not None:
+                query["timestamp"]["$lt"] = end
+        
+        # Execute query with or without timestamp filters
+        return [i for i in db[f'{client}-{room}'].find(query, {"_id": False})]
     except Exception as e:
-        return(e.with_traceback)    
+        return {"error": str(e)}

@@ -463,7 +463,7 @@ def image_display(arrimg: dict, colno: int, figsize: tuple = (15, 5), detected: 
     plt.tight_layout(rect=[0, 0.03, 1, 0.97])  # Adjust layout to make room for the text
     plt.show()
  
-def detect(control:str, current:str, crop:bool=True, color:str="blue", shape:str="auto", displayresults:bool=True):
+def detect(control:str, current:str, crop:bool=True, color:str="blue", shape:str="auto", displayresults:bool=True, savehighlight:str=None):
     #Import original image
     imgarr = {"Control":_open_image(control, False)}
     imgarr["Current"] = _open_image(current, False)
@@ -492,6 +492,9 @@ def detect(control:str, current:str, crop:bool=True, color:str="blue", shape:str
             border_color=(255,0,0),
             border_width=4
         )
+        if savehighlight:
+            imgarr["Highlighted Result"].save(f"imagedata/highlights/{savehighlight}.png","png")
+    
     if displayresults:
         image_display(imgarr,2,(5,7), detected= detect_stain(imgarr["Fused"],1))
     return(str(detected))

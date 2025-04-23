@@ -1,3 +1,2 @@
-from datetime import datetime, timezone
-
-print(datetime.now(timezone.utc))
+for i in range(1,5):
+    print(i)
