@@ -3,7 +3,7 @@ import staindet
 from typing import Union, Annotated
 from PIL import Image
 import pymongo, json, uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 app = FastAPI()
@@ -40,15 +40,16 @@ def detectstain(control, current, sector_num:int, client, room, crop:bool=True, 
     # if type(current) == str:
     #     current = staindet._open_image(current)
 
+     
     try:
 
         current_results = {
             "id" : control.split("/")[-1].split(".")[0],
-            "timestamp": datetime.now(timezone.utc()),
+            "timestamp": datetime.now(timezone.utc),
             "detections" : 0,
             "sectors" : {}
         }
-
+        
         for i in range(sector_num):
             curcontrol = control
             current_results["sectors"][str(i)] = {
@@ -62,11 +63,10 @@ def detectstain(control, current, sector_num:int, client, room, crop:bool=True, 
                 "highlight": current_results['id']+"_highlight"+".png",
                 "control": control
             }
-
+            
         db[f'{client}-room'].insert_one(current_results)
-
-
         return(current_results['sectors'])
+
     except Exception as e:
         return(e)
 
