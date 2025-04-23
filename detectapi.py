@@ -50,20 +50,20 @@ def detectstain(control, current, sector_num:int, client, room, crop:bool=True, 
     
     for i in range(1,sector_num+1):
         print(i)
-        if staindet.detect(
+        detected = staindet.detect(
         control = f"imagedata/control/{control}-{i}.{format}",
         current = f"imagedata/captures/{current}-{i}.{format}",
         crop = crop,
         color = crop_color,
         shape = crop_shape,
         displayresults= False,
-        savehighlight=f"Sector_{current_results['id']}_highlight"):
-            
+        savehighlight=f"Sector_{current_results['id']}-{i}_highlight")
+        print(type(detected))
+        if detected == "True":
             current_results["sectors"][str(i)] = {
-                "highlight": f"Sector_{current_results['id']}_highlight.png",
-                "control": control
+                "highlight": f"Sector_{current_results['id']}-{i}_highlight.png",
+                "control": f"{control}-{i}.{format}"
             }
-
     current_results["detections"] = len(current_results["sectors"].keys())
     db[f'{client}-{room}'].insert_one(current_results)
 
