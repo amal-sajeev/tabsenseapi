@@ -72,16 +72,17 @@ def detectstain(control, current, sector_num:int, client, room, crop:bool=True, 
 
 
 @app.post("/report")
-def getreport(room, client, start: Annotated[datetime, Body()], end: Annotated[datetime, Body()]):
-    print(f"Type of start: {type(start)}, Value: {start}")
-    print(f"Type of end: {type(end)}, Value: {end}")
-    
-    # Try a simpler query first to confirm documents exist
-    all_docs = list(db[f'{client}-{room}'].find({}, {"_id": False}).limit(5))
-    print(f"Sample docs in collection: {all_docs}")
-    
-    # Then try your original query
-    results = list(db[f'{client}-{room}'].find({"timestamp": {"$gte": start, "$lt": end}}, {"_id": False}))
-    print(f"Results count: {len(results)}")
-    
-    return results
+def getreport(room, client, start:Annotated[datetime,Body()], end:Annotated[datetime,Body()]):
+    """
+    Gets all data in a date range.
+
+    Args:
+
+        room (String) = Name of the room to get reports from.
+        start (String) = Date of beginning of date range.
+        end (String) = Date of ending of date range.
+    """
+    try:
+        return([i for i in db[f'{client}-{room}'].find({"timestamp":{"$gte":start,"$lt":end}},{"_id":False})])
+    except Exception as e:
+        return(e.with_traceback)    
