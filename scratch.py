@@ -1,2 +1,14 @@
-for i in range(1,5):
-    print(i)
+import schedule
+import time
+
+def printr():
+    # print("BIG")
+    print("MAD")
+    i=False
+
+schedule.every(2).seconds.do(printr)
+
+while True:
+    i= True
+    schedule.run_pending()
+    time.sleep(1)

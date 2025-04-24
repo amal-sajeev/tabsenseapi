@@ -40,37 +40,37 @@ def detectstain(control, current, sector_num:int, client, room, crop:bool=True, 
     # if type(current) == str:
     #     current = staindet._open_image(current)
 
-    # try:
-    current_results = {
-        "id" : control.split("/")[-1].split(".")[0],
-        "timestamp": datetime.now(timezone.utc),
-        "detections" : 0,
-        "sectors" : {}
-    }
-    
-    for i in range(1,sector_num+1):
-        print(i)
-        detected = staindet.detect(
-        control = f"imagedata/control/{control}-{i}.{format}",
-        current = f"imagedata/captures/{current}-{i}.{format}",
-        crop = crop,
-        color = crop_color,
-        shape = crop_shape,
-        displayresults= False,
-        savehighlight=f"Sector_{current_results['id']}-{i}_highlight")
-        print(type(detected))
-        if detected == "True":
-            current_results["sectors"][str(i)] = {
-                "highlight": f"Sector_{current_results['id']}-{i}_highlight.png",
-                "control": f"{control}-{i}.{format}"
-            }
-    current_results["detections"] = len(current_results["sectors"].keys())
-    db[f'{client}-{room}'].insert_one(current_results)
+    try:
+        current_results = {
+            "id" : control.split("/")[-1].split(".")[0],
+            "timestamp": datetime.now(timezone.utc),
+            "detections" : 0,
+            "sectors" : {}
+        }
+        
+        for i in range(1,sector_num+1):
+            print(i)
+            detected = staindet.detect(
+            control = f"imagedata/control/{control}-{i}.{format}",
+            current = f"imagedata/captures/{current}-{i}.{format}",
+            crop = crop,
+            color = crop_color,
+            shape = crop_shape,
+            displayresults= False,
+            savehighlight=f"Sector_{current_results['id']}-{i}_highlight")
+            print(type(detected))
+            if detected ==  "True":
+                current_results["sectors"][str(i)] = {
+                    "highlight": f"Sector_{current_results['id']}-{i}_highlight.png",
+                    "control": f"{control}-{i}.{format}"
+                }
+        current_results["detections"] = len(current_results["sectors"].keys())
+        db[f'{client}-{room}'].insert_one(current_results)
 
-    return(current_results['sectors'])
+        return(current_results['sectors'])
 
-    # except Exception as e:
-    #     return(e)
+    except Exception as e:
+        return(e)
 
 
 @app.post("/report")
@@ -85,7 +85,7 @@ def getreport(room, client, start: Annotated[datetime, Body()] = None, end: Anno
         end (String) = Date of ending of date range. Optional.
     """
     try:
-        # Build query based on provided parameters
+        # Build query based on provided para                                                                                                            meters
         query = {}
         if start is not None or end is not None:
             query["timestamp"] = {}
@@ -98,3 +98,4 @@ def getreport(room, client, start: Annotated[datetime, Body()] = None, end: Anno
         return [i for i in db[f'{client}-{room}'].find(query, {"_id": False})]
     except Exception as e:
         return {"error": str(e)}
+
