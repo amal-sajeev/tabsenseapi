@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Body, HTTPException, File, UploadFile,status
 import staindet
-from typing import Union, Annotated
+from typing import Union, Annotated, List
 from PIL import Image
 import pymongo, json, uuid
 from datetime import datetime, timezone
@@ -70,7 +70,7 @@ def detectstain(control, current, sector_num:int, client, room, crop:bool=True, 
         return(current_results['sectors'])
 
     except Exception as e:
-        return(e)
+        return({"error": str(e.with_traceback())})
 
 
 @app.post("/report")
@@ -97,5 +97,73 @@ def getreport(room, client, start: Annotated[datetime, Body()] = None, end: Anno
         # Execute query with or without timestamp filters
         return [i for i in db[f'{client}-{room}'].find(query, {"_id": False})]
     except Exception as e:
-        return {"error": str(e)}
+        return({"error": str(e.with_traceback())})
 
+# SCHEDULE CRUD
+
+@app.post("/addentry")
+def addScheduleEntry(client:str, room:str, label:str, start:Annotated[datetime, Body()], end:Annotated[datetime, Body()]):
+    """Add a time period in the schedule.
+
+    Args:                
+        client (str): The client that the room belongs to.
+        room (str): The room name or ID to represent the room.
+        label (str): Label for this entry.
+        start (Annotated[datetime,body): The time at which the control image is taken, for clean surfaces.
+        end (Annotated[datetime,body): The time at which the current image is captured, to compare with the control image and recognize stains.
+    """
+    try:
+        entry = {
+            "id": str(uuid.uuid4()),
+            "label": label,
+            "start": start,
+            "end": end,
+            "room": room
+        }
+        db[f'{client}-schedule'].insert_one(entry)
+        return(f"Inserted into schedule for {room}")
+    except Exception as e:
+        return({"error": str(e.with_traceback())})
+
+
+@app.post("/entry/add")
+def addScheduleEntry(client:str, room:str, label:str, start:Annotated[datetime, Body()], end:Annotated[datetime, Body()]):
+    """Add a time period in the schedule.
+
+    Args:                aqe
+        client (str): The client that the room belongs to.
+        room (str): The room name or ID to represent the room.
+        label (str): Label for this entry.
+        start (Annotated[datetime,body): The time at which the control image is taken, for clean surfaces.
+        end (Annotated[datetime,body): The time at which the current image is captured, to compare with the control image and recognize stains.
+    """
+    try:
+        entry = {
+            "id": str(uuid.uuid4()),
+            "label": label,
+            "start": start,
+            "end": end,
+            "room": room
+        }
+        db[f'{client}-schedule'].insert_one(entry)
+        return(f"Inserted into schedule for {room}")
+    except Exception as e:
+        return({"error": str(e.with_traceback())})
+
+
+@app.post("/entry/deleteone")
+def deleteScheduleEntry(id:str):
+    """Delete a time period in the schedule.
+
+    Args:
+        id (str): id of the time period entry.
+    """
+    try:
+        db[f'{client}-schedule'].delete_one({"id":id})
+    except Exception as e:
+        return({"error": str(e.with_traceback())})
+
+@app.post("/entry/delete")
+def deleteScheduleEntries(client:str,id:List[str]):
+    
+    return(str(db[f'{client}-schedule'].delete_many({"id":{"$in":id}})))
