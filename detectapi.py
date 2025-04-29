@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Body, HTTPException, File, UploadFile,status
+from pydantic import BaseModel
 import staindet
 from typing import Union, Annotated, List
 from PIL import Image
 import pymongo, json, uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, time
 import os
 
 app = FastAPI()
@@ -70,7 +71,7 @@ def detectstain(control, current, sector_num:int, client, room, crop:bool=True, 
         return(current_results['sectors'])
 
     except Exception as e:
-        return({"error": str(e.with_traceback())})
+        return({"error": str(e.with_traceback)})
 
 
 @app.post("/report")
@@ -97,73 +98,104 @@ def getreport(room, client, start: Annotated[datetime, Body()] = None, end: Anno
         # Execute query with or without timestamp filters
         return [i for i in db[f'{client}-{room}'].find(query, {"_id": False})]
     except Exception as e:
-        return({"error": str(e.with_traceback())})
+        return({"error": str(e.with_traceback)})
 
 # SCHEDULE CRUD
 
-@app.post("/addentry")
-def addScheduleEntry(client:str, room:str, label:str, start:Annotated[datetime, Body()], end:Annotated[datetime, Body()]):
-    """Add a time period in the schedule.
-
-    Args:                
-        client (str): The client that the room belongs to.
-        room (str): The room name or ID to represent the room.
-        label (str): Label for this entry.
-        start (Annotated[datetime,body): The time at which the control image is taken, for clean surfaces.
-        end (Annotated[datetime,body): The time at which the current image is captured, to compare with the control image and recognize stains.
-    """
-    try:
-        entry = {
-            "id": str(uuid.uuid4()),
-            "label": label,
-            "start": start,
-            "end": end,
-            "room": room
-        }
-        db[f'{client}-schedule'].insert_one(entry)
-        return(f"Inserted into schedule for {room}")
-    except Exception as e:
-        return({"error": str(e.with_traceback())})
+class Entry(BaseModel):
+    client: str = None
+    id: str = None
+    room: str = None
+    label: str = None
+    start: time = None
+    end: time = None
 
 
 @app.post("/entry/add")
-def addScheduleEntry(client:str, room:str, label:str, start:Annotated[datetime, Body()], end:Annotated[datetime, Body()]):
+def addScheduleEntry(entry:Entry):
     """Add a time period in the schedule.
 
-    Args:                aqe
-        client (str): The client that the room belongs to.
-        room (str): The room name or ID to represent the room.
-        label (str): Label for this entry.
-        start (Annotated[datetime,body): The time at which the control image is taken, for clean surfaces.
-        end (Annotated[datetime,body): The time at which the current image is captured, to compare with the control image and recognize stains.
+    Args:
+        entry (Entry): Details of schedule entry to add, format:
+            {
+                "client" (str): The client that the room belongs to.        
+                "room" (str): The room name or ID to represent the room.
+                "label" (str): Label for this entry.
+                "start" (Annotated[time,body): The time at which the control image is taken, for clean surfaces.
+                "end" (Annotated[time,body): The time at which the current image is captured, to compare with the control image and recognize stains.
+            }
     """
-    try:
-        entry = {
-            "id": str(uuid.uuid4()),
-            "label": label,
-            "start": start,
-            "end": end,
-            "room": room
-        }
-        db[f'{client}-schedule'].insert_one(entry)
-        return(f"Inserted into schedule for {room}")
-    except Exception as e:
-        return({"error": str(e.with_traceback())})
-
+    # try:
+    dentry = {
+        "id": str(uuid.uuid4()),
+        "label": entry.label,
+        "start": entry.start.isoformat(),
+        "end": entry.end.isoformat(),
+        "room": entry.room
+    }
+    db[f'{entry.client}-schedule'].insert_one(dentry)
+    return(f"Inserted into schedule for {entry.room}")
+    # except Exception as e:
+    #     return({"error": str(e.with_traceback)})
 
 @app.post("/entry/deleteone")
-def deleteScheduleEntry(id:str):
+def deleteScheduleEntry(id:str, client:str, room:str):
     """Delete a time period in the schedule.
 
     Args:
         id (str): id of the time period entry.
+        client(str): The client that the room belongs to.
     """
     try:
         db[f'{client}-schedule'].delete_one({"id":id})
     except Exception as e:
-        return({"error": str(e.with_traceback())})
+        return({"error": str(e.with_traceback)})
 
-@app.post("/entry/delete")
-def deleteScheduleEntries(client:str,id:List[str]):
-    
-    return(str(db[f'{client}-schedule'].delete_many({"id":{"$in":id}})))
+@app.post("/entry/delete") 
+def deleteScheduleEntries(client:str,id:List[str]=[], room:str=""):
+    """Delete multiple entries based on list of IDs or all entries related to a room.
+
+    Args:
+        client (str): _description_
+        id (List[str]): _description_
+        room(str): The room name or ID used to represent the room.
+    """
+    try:
+        filterstring={}
+        if id!=[]:
+            filterstring["id"] = {"$in":id}
+        if room !="":
+            filterstring["room"] = room
+        return(str(db[f'{client}-schedule'].delete_many(filterstring)))
+    except Exception as e:
+        return({"error": str(e.with_traceback)})
+
+@app.get("/entry")
+def getScheduleEntry(entry:Entry):
+    """Get schedule entries, using id, room, label, and a date range to filter optionally.
+
+    Args:
+        client (str): The client that the room belongs to.
+        room (str): The room name or ID to represent the room.
+        label (str): Label for this entry.
+        start (Annotated[time,body): The time at which the control image is taken, for clean surfaces.
+        end (Annotated[time,body): The time at which the current image is captured, to compare with the control image and recognize stains.
+    """
+
+    try: 
+        filterstring={}
+        if entry.id!="":
+            filterstring["id"] = {"$in":entry.id}
+        if room !="":
+            filterstring["room"] = room
+        if label!="":
+            filterstring["label"] = label
+        if start is not None or end is not None:
+            query["timestamp"] = {}
+            if start is not None:
+                query["timestamp"]["$gte"] = start
+            if end is not None:
+                query["timestamp"]["$lt"] = end
+        return(db[f"{client}-schedule"].find(filterstring,{"_id":False}))
+    except Exception as e:
+        return(str(e.with_traceback))
