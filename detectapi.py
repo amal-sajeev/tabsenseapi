@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Body, HTTPException, File, UploadFile,status
 from pydantic import BaseModel
 import staindet
-from typing import Union, Annotated, List
+from typing import Union, Annotated, List, Optional
 from PIL import Image
 import pymongo, json, uuid
 from datetime import datetime, timezone, time
@@ -170,32 +170,48 @@ def deleteScheduleEntries(client:str,id:List[str]=[], room:str=""):
     except Exception as e:
         return({"error": str(e.with_traceback)})
 
+
 @app.get("/entry")
-def getScheduleEntry(entry:Entry):
+def getScheduleEntry(
+    client: Optional[str] = None,
+    id: Optional[str] = None,
+    room: Optional[str] = None,
+    label: Optional[str] = None,
+    start: Optional[time] = None,
+    end: Optional[time] = None
+):
     """Get schedule entries, using id, room, label, and a date range to filter optionally.
 
     Args:
         client (str): The client that the room belongs to.
         room (str): The room name or ID to represent the room.
         label (str): Label for this entry.
-        start (Annotated[time,body): The time at which the control image is taken, for clean surfaces.
-        end (Annotated[time,body): The time at which the current image is captured, to compare with the control image and recognize stains.
+        start (time): The time at which the control image is taken, for clean surfaces.
+        end (time): The time at which the current image is captured, to compare with the control image and recognize stains.
     """
 
     try: 
-        filterstring={}
-        if entry.id!="":
-            filterstring["id"] = {"$in":entry.id}
-        if room !="":
+        filterstring = {}
+        if client:
+            # Make sure to use the client variable, not a non-existent entry object
+            collection = f"{client}-schedule"
+        else:
+            raise HTTPException(status_code=400, detail="Client is required")
+            
+        if id:
+            filterstring["id"] = id
+        if room:
             filterstring["room"] = room
-        if label!="":
+        if label:
             filterstring["label"] = label
-        if start is not None or end is not None:
-            query["timestamp"] = {}
-            if start is not None:
-                query["timestamp"]["$gte"] = start
-            if end is not None:
-                query["timestamp"]["$lt"] = end
-        return(db[f"{client}-schedule"].find(filterstring,{"_id":False}))
+        if start is not None:
+            filterstring["start"] = {"$gte" : start.isoformat()}
+        if end is not None: 
+            filterstring["end"] = {"$lt": end.isoformat()}
+                
+        # Return the found documents, assuming db is properly defined elsewhere
+        result = list(db[collection].find(filterstring, {"_id": False}))
+        return result
+            
     except Exception as e:
-        return(str(e.with_traceback))
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
