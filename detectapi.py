@@ -109,6 +109,7 @@ class Entry(BaseModel):
     label: str = None
     start: time = None
     end: time = None
+    days: List[str] = []
 
 
 @app.post("/entry/add")
@@ -119,7 +120,7 @@ def addScheduleEntry(entry:Entry):
         entry (Entry): Details of schedule entry to add, format:
             {
                 "client" (str): The client that the room belongs to.        
-                "room" (str): The room name or ID to represent the room.
+                "room" (str): The room name     or ID to represent the room.
                 "label" (str): Label for this entry.
                 "start" (Annotated[time,body): The time at which the control image is taken, for clean surfaces.
                 "end" (Annotated[time,body): The time at which the current image is captured, to compare with the control image and recognize stains.
@@ -131,7 +132,8 @@ def addScheduleEntry(entry:Entry):
             "label": entry.label,
             "start": entry.start.isoformat(),
             "end": entry.end.isoformat(),
-            "room": entry.room
+            "room": entry.room,
+            "days": entry.days
         }
         db[f'{entry.client}-schedule'].insert_one(dentry)
         return(f"Inserted into schedule for {entry.room}")
@@ -224,14 +226,19 @@ def updateScheduleEntry(client:str,id:str, entry:Entry):
         id (str): ID of the schedule entry to be updated.
         entry (Entry): The entry details to update.
     """
-    uentry = {"$set":{}}
-    if entry.room:
-        uentry["$set"].update( {"room": entry.room})
-    if entry.label:
-        uentry["$set"].update( {"label": entry.label})
-    if entry.start is not None:
-        uentry["$set"].update({"start": entry.start.isoformat()})
-    if entry.end is not None: 
-        uentry["$set"].update({"end": entry.end.isoformat()})
+    try:
+        uentry = {"$set":{}}
+        if entry.room:
+            uentry["$set"].update( {"room": entry.room})
+        if entry.label:
+            uentry["$set"].update( {"label": entry.label})
+        if entry.start is not None:
+            uentry["$set"].update({"start": entry.start.isoformat()})
+        if entry.end is not None: 
+            uentry["$set"].update({"end": entry.end.isoformat()})
+        if entry.days is not None:
+            uentry["$set"].update({"days": entry.days})
 
-    return(str(db[f"{client}-schedule"].update_one({"id":id},uentry)))
+        return(str(db[f"{client}-schedule"].update_one({"id":id},uentry)))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
