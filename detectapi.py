@@ -125,18 +125,18 @@ def addScheduleEntry(entry:Entry):
                 "end" (Annotated[time,body): The time at which the current image is captured, to compare with the control image and recognize stains.
             }
     """
-    # try:
-    dentry = {
-        "id": str(uuid.uuid4()),
-        "label": entry.label,
-        "start": entry.start.isoformat(),
-        "end": entry.end.isoformat(),
-        "room": entry.room
-    }
-    db[f'{entry.client}-schedule'].insert_one(dentry)
-    return(f"Inserted into schedule for {entry.room}")
-    # except Exception as e:
-    #     return({"error": str(e.with_traceback)})
+    try:
+        dentry = {
+            "id": str(uuid.uuid4()),
+            "label": entry.label,
+            "start": entry.start.isoformat(),
+            "end": entry.end.isoformat(),
+            "room": entry.room
+        }
+        db[f'{entry.client}-schedule'].insert_one(dentry)
+        return(f"Inserted into schedule for {entry.room}")
+    except Exception as e:
+        return({"error": str(e.with_traceback)})
 
 @app.post("/entry/deleteone")
 def deleteScheduleEntry(id:str, client:str, room:str):
@@ -215,3 +215,23 @@ def getScheduleEntry(
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+@app.post("/entry/update")
+def updateScheduleEntry(client:str,id:str, entry:Entry):
+    """Update a schedule entry based on the id.
+
+    Args:
+        id (str): ID of the schedule entry to be updated.
+        entry (Entry): The entry details to update.
+    """
+    uentry = {"$set":{}}
+    if entry.room:
+        uentry["$set"].update( {"room": entry.room})
+    if entry.label:
+        uentry["$set"].update( {"label": entry.label})
+    if entry.start is not None:
+        uentry["$set"].update({"start": entry.start.isoformat()})
+    if entry.end is not None: 
+        uentry["$set"].update({"end": entry.end.isoformat()})
+
+    return(str(db[f"{client}-schedule"].update_one({"id":id},uentry)))
