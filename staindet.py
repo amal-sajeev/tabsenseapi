@@ -240,7 +240,7 @@ def fuse_image(original, negative, alpha:float = 0.5):
     negarray = np.array(negative).astype(np.float32)
     fusedarray = alpha * ogarray + (1- alpha) * negarray
     fused = np.clip(fusedarray, 0, 255).astype(np.uint8)
-    fuseimage = Image.fromarray(fused).filter(ImageFilter.FIND_EDGES)
+    fuseimage = Image.fromarray(fused).filter(ImageFilter.MedianFilter(3)).filter(ImageFilter.FIND_EDGES)
     border = (25,25,25,25)
     return(ImageOps.crop(fuseimage,border))
 
@@ -483,7 +483,7 @@ def detect(control:str, current:str, crop:bool=True, color:str="blue", shape:str
             negative= makeneg(imgarr["Control"]),
             alpha=0.5
         )
-    detected = detect_stain(imgarr["Fused"],1)
+    detected = detect_stain(imgarr["Fused"],3)
     if detected:
         imgarr["Highlighted Result"] = highlight_stain(
             fused_image=imgarr["Fused"],
