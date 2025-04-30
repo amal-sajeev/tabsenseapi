@@ -1,34 +1,25 @@
-import schedule
-import time
-from datetime import datetime, timezone, time
-import pymongo
-import os
-import uuid
-from typing import List
+import cv2
 
-def controlcapture(room:str, id:str, days:List[str]):
-    if datetime.now().strftime("%A") in days:
-        print(f"Captured control at room {room}, image ID: {id}")
+def main(args):
 
-def currentcapture(room:str, id:str, days:List[str]):
-    if datetime.now().strftime("%A") in days:
-        print(f"Captured current at room {room}, image ID: {id}")
+	#cap = cv2.VideoCapture(0) #default camera
+	cap = cv2.VideoCapture('rtsp://192.168.10.77:8083/h264_aac.sdp') #IP Camera
+	ret, frame = cap.read()
+	frame = cv2.resize(frame,(1024, 576))
+	cv2.imwrite("testimage.png", frame)
 
-print(datetime.now(timezone.utc).strftime("%A")=="Tuesday")
+	# while(True):
+	# 	ret, frame = cap.read()
+	# 	frame=cv2.resize(frame, (1024, 576)) 
+	# 	cv2.imshow('Capturing',frame)
+		
+	# 	if cv2.waitKey(1) & 0xFF == ord('q'): #click q to stop capturing
+	# 		break
 
-mongocreds = os.getenv("mongocred")
-base = pymongo.MongoClient(f"mongodb://{mongocreds}@localhost:27017")
-db=base["tablesense"]
+	cap.release()
+	cv2.destroyAllWindows()
+	return 0
 
-client = "testclient"
-scheduleraw = db[f"{client}-schedule"].find()
-
-for i in scheduleraw:
-    print(time.fromisoformat(i["start"]))
-    print(i["start"])
-    schedule.every().day.at(time.fromisoformat(i["start"]).strftime("%H:%M")).do(controlcapture,room=i["room"], id= str(uuid.uuid4()), days = i["days"] )
-    schedule.every().day.at(time.fromisoformat(i["end"]).strftime("%H:%M")).do(currentcapture,room=i["room"], id= str(uuid.uuid4()), days = i["days"] )
-
-
-while True:
-    schedule.run_pending()
+if __name__ == '__main__':
+    import sys
+    sys.exit(main(sys.argv))
