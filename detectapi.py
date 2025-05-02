@@ -242,3 +242,95 @@ def updateScheduleEntry(client:str,id:str, entry:Entry):
         return(str(db[f"{client}-schedule"].update_one({"id":id},uentry)))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+#Camera link CRUD
+
+class CamLink(BaseModel):
+    id:str = uuid.uuid4()
+    client:str = ""
+    room:str = ""
+    sector:int= None
+    link:str = ""
+
+@app.post("/cam")
+def addCamLink(camlink:CamLink):
+    """Enter information for a camera in the database.
+
+    Args:
+        camlink (CamLink): Entry for camera database. ID is optional. Format:
+                            {
+                                id:str
+                                client:str
+                                room:str
+                                sector:int
+                                link:str
+                            }
+    """
+    try:
+        newcam = {
+            "id" : camlink.id,
+            "client" : camlink.client,
+            "room" : camlink.room,
+            "sector" : camlink.sector,
+            "link" : camlink.link
+        }
+        db[f'{camlink.client}-cams'].insert_one(newcam)
+        return(f"Inserted into camera database for sector {camlink.sector} in room {camlink.room}")
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+@app.get("/cam")
+def getCamLink(client:str, room: str="", sector:int ="", id:str = ""):
+    
+    try:
+        if id != "":
+            return(db[f"{client}-cams"].find_one({"id":id}))
+        elif room !="" and sector !="":
+            return(db[f"{client}-cams"].find_one({"room":room, "sector": sector }))
+        else:
+            raise HTTPException(status_code=500, detail=f"Either enter both sector and room, or ID.")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+@app.post("/cam/delete")
+def deleteCam(client:str, room: str="", sector:int ="", id:str = ""):
+
+    try:
+        if id != "":
+            return(db[f"{client}-cams"].delete_one({"id":id}))
+        elif room !="" and sector !="":
+            return(db[f"{client}-cams"].delete_one({"room":room, "sector": sector }))
+        elif room!="" and sector==None:
+            return(db[f"{client}-cams"].delete_many({"room":room}))
+        else:
+            raise HTTPException(status_code=500, detail=f"Either enter both sector and room, or ID.")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+@app.post("/cam/update")
+def updateCam(client:str,id:str, camlink:CamLink):
+    """Update a camera entry based on the id or room and sector.
+
+    Args:
+        id (str): ID of the schedule entry to be updated.e
+        camlink (CamLink): The camera details to update. ID cannot be updated. Simply put any data you wish to update. Format:
+                            {
+                                room:str
+                                sector:int
+                                link:str
+                            }
+    """
+    try:
+        ucam = {"$set":{}}
+        if ucam.room != "": 
+            ucam["$set"].update( {"room": ucam.room})
+        if ucam.sector != "":
+            ucam["$set"].update( {"sector": ucam.sector})
+        if ucam.link != "":
+            ucam["$set"].update({"link": ucam.link})
+        return(str(db[f"{client}-cams"].update_one({"id":id},ucam)))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
