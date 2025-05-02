@@ -8,7 +8,6 @@ from typing import List
 import cv2
 import detectapi
 
-
 mongocreds = os.getenv("mongocred")
 base = pymongo.MongoClient(f"mongodb://{mongocreds}@localhost:27017")
 db=base["tablesense"]
