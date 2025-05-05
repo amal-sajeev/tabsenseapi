@@ -264,52 +264,52 @@ def addCamLink(camlink:CamLink):
                                 link:str
                             }
     """
-    # try:
-    newcam = {
-        "id" : camlink.id,
-        "client" : camlink.client,
-        "room" : camlink.room,
-        "sector" : camlink.sector,
-        "link" : camlink.link
-    }
-    db[f'{camlink.client}-cams'].insert_one(newcam)
-    return(f"Inserted into camera database for sector {camlink.sector} in room {camlink.room}")   
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    try:
+        newcam = {
+            "id" : camlink.id,
+            "client" : camlink.client,
+            "room" : camlink.room,
+            "sector" : camlink.sector,
+            "link" : camlink.link
+        }
+        db[f'{camlink.client}-cams'].insert_one(newcam)
+        return(f"Inserted into camera database for sector {camlink.sector} in room {camlink.room}")   
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 @app.get("/cam")
 def getCamLink(client:str, room: str="", sector:int =None, id:str = ""):
     
-    # try:
-    if id != "":
-        result = db[f"{client}-cams"].find_one({"id":id}, {"_id": False})
-        if result == None:
-            raise HTTPException(status_code=404, detail=f"Camera with id {id} not found!")
-        return(result)
-    elif room !="" and sector !="":
-        result = db[f"{client}-cams"].find_one({"room":room, "sector": sector }, {"_id": False})
-        if result == None:
-            raise HTTPException(status_code=404, detail=f"Camera at room {room}, sector {sector} not found!")
-        return(result)
-    else:
-        raise HTTPException(status_code=500, detail=f"Either enter both sector and room, or ID.")
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    try:
+        if id != "":
+            result = db[f"{client}-cams"].find_one({"id":id}, {"_id": False})
+            if result == None:
+                raise HTTPException(status_code=404, detail=f"Camera with id {id} not found!")
+            return(result)
+        elif room !="" and sector !="":
+            result = db[f"{client}-cams"].find_one({"room":room, "sector": sector }, {"_id": False})
+            if result == None:
+                raise HTTPException(status_code=404, detail=f"Camera at room {room}, sector {sector} not found!")
+            return(result)
+        else:
+            raise HTTPException(status_code=500, detail=f"Either enter both sector and room, or ID.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
  
 @app.post("/cam/delete")
 def deleteCam(client:str, room: str="", sector:int =None, id:str = ""):
 
-    # try:
-    if id != "":
-        return(str(db[f"{client}-cams"].delete_one({"id":id})))
-    elif room !="" and sector !="":
-        return(str(db[f"{client}-cams"].delete_one({"room":room, "sector": sector })))
-    elif room!="" and sector==None:
-        return(str(db[f"{client}-cams"].delete_many({"room":room})))
-    else:
-        raise HTTPException(status_code=500, detail=f"Either enter both sector and room, or ID.")
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    try:
+        if id != "":
+            return(str(db[f"{client}-cams"].delete_one({"id":id})))
+        elif room !="" and sector !="":
+            return(str(db[f"{client}-cams"].delete_one({"room":room, "sector": sector })))
+        elif room!="" and sector==None:
+            return(str(db[f"{client}-cams"].delete_many({"room":room})))
+        else:
+            raise HTTPException(status_code=500, detail=f"Either enter both sector and room, or ID.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 @app.post("/cam/update")
 def updateCam(client:str,id:str, camlink:CamLink):
@@ -324,14 +324,14 @@ def updateCam(client:str,id:str, camlink:CamLink):
                                 link:str
                             }
     """
-    # try:
-    ucam = {"$set":{}}
-    if camlink.room != "": 
-        ucam["$set"].update( {"room": camlink.room})
-    if camlink.sector != "":
-        ucam["$set"].update( {"sector": camlink.sector})
-    if camlink.link != "":
-        ucam["$set"].update({"link": camlink.link})
-    return(str(db[f"{client}-cams"].update_one({"id":id},ucam)))
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    try:
+        ucam = {"$set":{}}
+        if camlink.room != "": 
+            ucam["$set"].update( {"room": camlink.room})
+        if camlink.sector != "":
+            ucam["$set"].update( {"sector": camlink.sector})
+        if camlink.link != "":
+            ucam["$set"].update({"link": camlink.link})
+        return(str(db[f"{client}-cams"].update_one({"id":id},ucam)))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
