@@ -12,23 +12,25 @@ mongocreds = os.getenv("mongocred")
 base = pymongo.MongoClient(f"mongodb://{mongocreds}@localhost:27017")
 db=base["tablesense"]
 
-client = "testclient"
+client = "acme"
 scheduleraw = db[f"{client}-schedule"].find()
 
-def controlcapture(room:str, id:str, days:List[str]):
+def controlcapture(room:str, sector:int, id:str, days:List[str]):
+    
     if datetime.now().strftime("%A") in days:
         try:
-            cap = cv2.VideoCapture(os.getenv("camlink")) #IP Camera
+            cap = cv2.VideoCapture(detectapi.getCamLink(client,room,sector)["link"]) #IP Camera
             ret, frame = cap.read()
             frame = cv2.resize(frame,(1024, 576))
             cv2.imwrite(f"imagedata/control/{room}-{id}-1.png", frame)
             print(f"Captured control at room {room}, image ID: {room}-{id}-1")
         except Exception as e:
             print(e.with_traceback)
-def currentcapture(room:str, id:str, days:List[str]):
+
+def currentcapture(room:str, sector:int, id:str, days:List[str]):
     if datetime.now().strftime("%A") in days:
         try:
-            cap = cv2.VideoCapture(os.getenv("camlink")) #IP Camera
+            cap = cv2.VideoCapture(detectapi.getCamLink(client,room,sector)["link"]) #IP Camera
             ret, frame = cap.read()
             frame = cv2.resize(frame,(1024, 576))
             cv2.imwrite(f"imagedata/captures/{room}-{id}-1.png", frame)
@@ -41,9 +43,9 @@ def sendhighlightcall(control,current, sector_num, client, room):
 
 for i in scheduleraw:
     controlID = str(uuid.uuid4())
-    schedule.every().day.at(time.fromisoformat(i["start"]).strftime("%H:%M")).do(controlcapture,room=i["room"], id= controlID, days = i["days"] )
+    schedule.every().day.at(time.fromisoformat(i["start"]).strftime("%H:%M")).do(controlcapture,room=i["room"], sector = i["sectors"], id= controlID, days = i["days"] )
     currentID = str(uuid.uuid4())
-    schedule.every().day.at(time.fromisoformat(i["end"]).strftime("%H:%M")).do(currentcapture,room=i["room"], id= currentID, days = i["days"] )
+    schedule.every().day.at(time.fromisoformat(i["end"]).strftime("%H:%M")).do(currentcapture,room=i["room"], sector = i["sectors"], id= currentID, days = i["days"] )
     # Convert to datetime (using a dummy date)
     detectdatetime = datetime.combine(datetime.min.date(), time.fromisoformat(i["end"]))
     # Add 5 seconds

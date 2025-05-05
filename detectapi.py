@@ -13,27 +13,33 @@ mongocreds = os.getenv("mongocred")
 client = pymongo.MongoClient(f"mongodb://{mongocreds}@localhost:27017")
 db=client["tablesense"]
 
+class Detect(BaseModel):
+    control:str
+    current:str
+    sectors:List[int]
+    client:str
+    room:str
+    crop:bool = True
+    crop_color:str = "blue"
+    crop_shape:str = "auto"
+    format:str = "png"
+
 @app.get("/detect")
-def detectstain(control, current, sector_num:int, client, room, crop:bool=True, crop_color = "blue", crop_shape= "auto", format:str="png"):
+def detectstain(detect:Detect):
     """Endpoint that reads a control image, the current image, and by comparing the two detects whether there's a stain on the current surface. If the tables aren't captured properly, as long as there's a coloured border on the surfaces, the crop parameter can be used to isolate the surface.
 
     Args:
     
-        control (string): UUID of control images from all sectors, which is the clean surface under the current conditions.
-        
-        current (string): UUID of current images from all sectors, the most recent image of the surface.
-        
-        sector_num (int): Number of sectors in the room.
-        
-        room (string): The room where the alerts should be sent and the detected images should be stored. Used for mongo collection.
-        
-        crop (bool, optional): Whether to isolate the surface based on a coloured border. Defaults to True.
-        
-        color (str, optional): The colour of the border. Allowed colour ranges are blue, red, green, yellow. Defaults to "blue".
-        
-        shape (str, optional): The shape of the table and the border. Allowed options are 'auto', 'rectangle', 'circle', and 'oval'. Auto can automatically detect the shape and is most recommended. Defaults to "auto".
-        
-        format (str, optional): The filetype of the image. Defaults to "png".
+        {
+            control (string): UUID of control images from all sectors, which is the clean surface under the current conditions.
+            current (string): UUID of current images from all sectors, the most recent image of the surface.
+            sectors (List[int]): List of sectors in the room.
+            room (string): The room where the alerts should be sent and the detected images should be stored. Used for mongo collection.
+            crop (bool, optional): Whether to isolate the surface based on a coloured border. Defaults to True.
+            color (str, optional): The colour of the border. Allowed colour ranges are blue, red, green, yellow. Defaults to "blue".
+            shape (str, optional): The shape of the table and the border. Allowed options are 'auto', 'rectangle', 'circle', and 'oval'. Auto can automatically detect the shape and is most recommended. Defaults to "auto".
+            format (str, optional): The filetype of the image. Defaults to "png".
+        }
     """
     #Only for use after module works with pil image inputs.
     # if type(control) == str:
@@ -43,27 +49,27 @@ def detectstain(control, current, sector_num:int, client, room, crop:bool=True, 
 
     # try:
     current_results = {
-        "id" : control.split("/")[-1].split(".")[0],
+        "id" : detect.control.split("/")[-1].split(".")[0],
         "timestamp": datetime.now(timezone.utc),
         "detections" : 0,
         "sectors" : {}
     }
     
-    for i in range(1,sector_num+1):
+    for i in detect.sectors:
         print(i)
         detected = staindet.detect(
-        control = f"imagedata/control/{control}-{i}.{format}",
-        current = f"imagedata/captures/{current}-{i}.{format}",
-        crop = crop,
-        color = crop_color,
-        shape = crop_shape,
+        control = f"imagedata/control/{control}-{i}.{detect.format}",
+        current = f"imagedata/captures/{current}-{i}.{detect.format}",
+        crop = detect.crop,
+        color = detect.color,
+        shape = detect.shape,
         displayresults= True,
         savehighlight=f"Sector_{current_results['id']}-{i}_highlight")
         print(type(detected))
         if detected ==  "True":
             current_results["sectors"][str(i)] = {
                 "highlight": f"Sector_{current_results['id']}-{i}_highlight.png",
-                "control": f"{control}-{i}.{format}"
+                "control": f"{control}-{i}.{detect.format}"
             }
     current_results["detections"] = len(current_results["sectors"].keys())
     db[f'{client}-{room}'].insert_one(current_results)
@@ -109,6 +115,7 @@ class Entry(BaseModel):
     label: str = None
     start: time = None
     end: time = None
+    sectors : list = []
     days: List[str] = []
 
 @app.post("/entry/add")
@@ -123,6 +130,8 @@ def addScheduleEntry(entry:Entry):
                 "label" (str): Label for this entry.
                 "start" (Annotated[time,body): The time at which the control image is taken, for clean surfaces.
                 "end" (Annotated[time,body): The time at which the current image is captured, to compare with the control image and recognize stains.
+                "sectors" (List[int]): A list of sectors to capture pictures from.
+                "days" (List[str]): A list of days, in words and title case, where the capture should be triggered.
             }
     """
     try:
@@ -132,6 +141,7 @@ def addScheduleEntry(entry:Entry):
             "start": entry.start.isoformat(),
             "end": entry.end.isoformat(),
             "room": entry.room,
+            "sectors" : entry.sectors,
             "days": entry.days
         }
         db[f'{entry.client}-schedule'].insert_one(dentry)
@@ -145,7 +155,7 @@ def deleteScheduleEntry(id:str, client:str, room:str):
 
     Args:
         id (str): id of the time period entry.
-        client(str): The client that the room belongs to.
+        "client" (str): The client that the room belongs to.
     """
     try:
         db[f'{client}-schedule'].delete_one({"id":id})
@@ -157,8 +167,8 @@ def deleteScheduleEntries(client:str,id:List[str]=[], room:str=""):
     """Delete multiple entries based on list of IDs or all entries related to a room.
 
     Args:
-        client (str): _description_
-        id (List[str]): _description_
+        client (str): The client that the room belongs to.
+        id (List[str]): id of the time period entry.
         room(str): The room name or ID used to represent the room.
     """
     try:
@@ -244,7 +254,7 @@ def updateScheduleEntry(client:str,id:str, entry:Entry):
 #Camera link CRUD
 
 class CamLink(BaseModel):
-    id:str = uuid.uuid4()
+    id:str = str(uuid.uuid4())
     client:str = ""
     room:str = ""
     sector:int= None
