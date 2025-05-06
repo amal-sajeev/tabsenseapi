@@ -19,11 +19,22 @@ class Detect(BaseModel):
     sectors:List[int]
     client:str
     room:str
-    crop:bool = True
-    crop_color:str = "blue"
-    crop_shape:str = "auto"
-    format:str = "png"
-
+    crop:bool
+    color:str
+    shape:str
+    format:str
+    # def __init__(control:str,current:str,sectors:List[int],client:str,room:str,crop:bool = True,color:str = "blue",shape:str = "auto",format:str = "png"):
+    #     return(Detect(
+    #                     control,
+    #                     current,
+    #                     sectors,
+    #                     client,
+    #                     room,
+    #                     crop,
+    #                     color,
+    #                     shape,
+    #                     format
+                    # ))
 @app.get("/detect")
 def detectstain(detect:Detect):
     """Endpoint that reads a control image, the current image, and by comparing the two detects whether there's a stain on the current surface. If the tables aren't captured properly, as long as there's a coloured border on the surfaces, the crop parameter can be used to isolate the surface.
@@ -58,8 +69,8 @@ def detectstain(detect:Detect):
     for i in detect.sectors:
         print(i)
         detected = staindet.detect(
-        control = f"imagedata/control/{control}-{i}.{detect.format}",
-        current = f"imagedata/captures/{current}-{i}.{detect.format}",
+        control = f"imagedata/control/{detect.control}-{i}.{detect.format}",
+        current = f"imagedata/captures/{detect.current}-{i}.{detect.format}",
         crop = detect.crop,
         color = detect.color,
         shape = detect.shape,
@@ -69,10 +80,10 @@ def detectstain(detect:Detect):
         if detected ==  "True":
             current_results["sectors"][str(i)] = {
                 "highlight": f"Sector_{current_results['id']}-{i}_highlight.png",
-                "control": f"{control}-{i}.{detect.format}"
+                "control": f"{detect.control}-{i}.{detect.format}"
             }
     current_results["detections"] = len(current_results["sectors"].keys())
-    db[f'{client}-{room}'].insert_one(current_results)
+    db[f'{detect.client}-{detect.room}'].insert_one(current_results)
 
     return(current_results['sectors'])
 
@@ -296,7 +307,7 @@ def getCamLink(client:str, room: str="", sector:int =None, id:str = ""):
             if result == None:
                 raise HTTPException(status_code=404, detail=f"Camera with id {id} not found!")
             return(result)
-        elif room !="" and sector !="":
+        elif room !="" and sector !=None:
             result = db[f"{client}-cams"].find_one({"room":room, "sector": sector }, {"_id": False})
             if result == None:
                 raise HTTPException(status_code=404, detail=f"Camera at room {room}, sector {sector} not found!")
