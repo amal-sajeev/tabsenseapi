@@ -6,7 +6,6 @@ from PIL import Image
 import pymongo, json, uuid
 from datetime import datetime, timezone, time
 import os
-
 app = FastAPI()
 
 mongocreds = os.getenv("mongocred")
@@ -311,9 +310,16 @@ def getCamLink(client:str, room: str="", sector:int =None, id:str = ""):
             result = db[f"{client}-cams"].find_one({"room":room, "sector": sector }, {"_id": False})
             if result == None:
                 raise HTTPException(status_code=404, detail=f"Camera at room {room}, sector {sector} not found!")
-            return(result)
+            return([i for i in result])
+        elif room!="" and sector == None:
+            result = db[f"{client}-cams"].find({"room":room}, {"_id": False})
+            if result == None:
+                raise HTTPException(status_code=404, detail=f"Camera at room {room} not found!")
+            return([i for i in result])
         else:
-            raise HTTPException(status_code=500, detail=f"Either enter both sector and room, or ID.")
+            
+            return([i for i in (db[f"{client}-cams"]).find({}, {"_id": False})])
+            # raise HTTPException(status_code=500, detail=f"Either enter both sector and room, or ID.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
  
