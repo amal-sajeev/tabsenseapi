@@ -155,7 +155,11 @@ def addScheduleEntry(entry:Entry):
             "days": entry.days
         }
         db[f'{entry.client}-schedule'].insert_one(dentry)
-        return(f"Inserted into schedule for {entry.room}")
+        return({
+            "message": "Inserted schedule entry succesfully.",
+            "id": entry.id,
+            "room": entry.room
+        })
     except Exception as e:
         return({"error": str(e.with_traceback)})
 
@@ -293,7 +297,12 @@ def addCamLink(camlink:CamLink):
             "link" : camlink.link
         }
         db[f'{camlink.client}-cams'].insert_one(newcam)
-        return(f"Inserted into camera database for sector {camlink.sector} in room {camlink.room}")   
+        return({
+            "message": "Inserted camera succesfully.",
+            "id": camlink.id,
+            "room": camlink.room,
+            "sector": camlink.sector
+        })   
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
@@ -362,3 +371,25 @@ def updateCam(client:str,id:str, camlink:CamLink):
         return(str(db[f"{client}-cams"].update_one({"id":id},ucam)))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+#HOLIDAYS CRUD
+class Holiday(BaseModel):
+    id: str= str(uuid.uuid4())
+    label: str
+    client:str
+    start:str
+    end:str
+    rooms:List[str]
+
+
+@app.post("/holiday/add")
+def addHoliday(holiday:Holiday):
+    try:
+        db[f"{client}-holidays"].insert_one(holiday.dict(exclude="client"))
+        return({
+            "message": "Inserted holiday succesfully.",
+            "id": holiday.id
+        })
+    except Exception as e:
+        return(str(e.with_traceback))
+
