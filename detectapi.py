@@ -374,7 +374,7 @@ def updateCam(client:str,id:str, camlink:CamLink):
 
 #HOLIDAYS CRUD
 class Holiday(BaseModel):
-    id: str= str(uuid.uuid4())
+    id: Union[List[str],str]= str(uuid.uuid4())
     label: str
     client:str
     start:str
@@ -393,10 +393,12 @@ def addHoliday(holiday:Holiday):
     except Exception as e:
         return(str(e.with_traceback))
 
-@app.get("/holiday")
+@app.post("/holiday")
 def getHoliday(holiday:Holiday):
     try:
         filterstring={}
+        if holiday.id != None:
+            return([i for i in db[f"{client}-holidays"].find({"id":holiday.id},{"_id":False})])
         if holiday.label != None:
             filterstring.update({"label": holiday.label})
         if holiday.rooms != None:
@@ -406,10 +408,45 @@ def getHoliday(holiday:Holiday):
         if holiday.end != None:
             filterstring.update({"end": {"$lt": holiday.end}})
 
-        db[f"{client}-holidays"].find(filterstring)
-        return({
-            "message": "Inserted holiday succesfully.",
-            "id": holiday.id
-        })
+        return([i for i in db[f"{client}-holidays"].find(filterstring,{"_id":False})])
+    except Exception as e:
+        return(str(e.with_traceback))
+
+@app.post("/holiday/update")
+def updateHoliday(holiday:Holiday):
+    try:
+        filterstring={}
+        if holiday.id != None:
+            if holiday.label != None:
+                filterstring.update({"label": holiday.label})
+            if holiday.rooms != None:
+                filterstring.update({"rooms": holiday.rooms})
+            if holiday.start != None:
+                filterstring.update({"start":{"$gt": holiday.start}})
+            if holiday.end != None:
+                filterstring.update({"end": {"$lt": holiday.end}})
+
+            return(str(db[f"{client}-holidays"].update_one({"id":id}, filterstring)))
+
+    except Exception as e:
+        return(str(e.with_traceback))
+
+@app.post("/holiday/delete")
+def deleteHoliday(holiday:Holiday):
+    try:
+        filterstring={}
+        if holiday.id != None:
+            return(str(db[f"{client}=holidays"].delete_many({"id":holiday.id})))
+        if holiday.label != None:
+            filterstring.update({"label": holiday.label})
+        if holiday.rooms != None:
+            filterstring.update({"rooms": holiday.rooms})
+        if holiday.start != None:
+            filterstring.update({"start":{"$gt": holiday.start}})
+        if holiday.end != None:
+            filterstring.update({"end": {"$lt": holiday.end}})
+        
+        return(str(db[f"{client}-holidays"].delete_many(filterstring)))
+
     except Exception as e:
         return(str(e.with_traceback))
