@@ -379,7 +379,7 @@ class Holiday(BaseModel):
     client:str
     start:str
     end:str
-    rooms:List[str]
+    rooms:Union[str,List[str]]
 
 
 @app.post("/holiday/add")
@@ -393,3 +393,23 @@ def addHoliday(holiday:Holiday):
     except Exception as e:
         return(str(e.with_traceback))
 
+@app.get("/holiday")
+def getHoliday(holiday:Holiday):
+    try:
+        filterstring={}
+        if holiday.label != None:
+            filterstring.update({"label": holiday.label})
+        if holiday.rooms != None:
+            filterstring.update({"rooms": holiday.rooms})
+        if holiday.start != None:
+            filterstring.update({"start":{"$gt": holiday.start}})
+        if holiday.end != None:
+            filterstring.update({"end": {"$lt": holiday.end}})
+
+        db[f"{client}-holidays"].find(filterstring)
+        return({
+            "message": "Inserted holiday succesfully.",
+            "id": holiday.id
+        })
+    except Exception as e:
+        return(str(e.with_traceback))
