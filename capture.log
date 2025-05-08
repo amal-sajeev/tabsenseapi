@@ -1,0 +1,159 @@
+2025-05-08 10:51:29,300 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 10:51:29,300 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 10:51:29,323 - TabSense-Scheduler - INFO - Found 2 clients: ['testclient', 'acme']
+2025-05-08 10:51:29,324 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 10:51:29,324 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 10:51:29,324 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 10:51:29,324 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 10:56:31,504 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 1
+2025-05-08 10:56:33,550 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 2
+2025-05-08 10:56:35,568 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 3
+2025-05-08 10:56:37,588 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 4
+2025-05-08 10:56:39,610 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 5
+2025-05-08 10:56:41,636 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 6
+2025-05-08 10:56:43,651 - TabSense-Scheduler - ERROR - Error processing sector 1 for room lobby: list indices must be integers or slices, not str
+2025-05-08 10:56:45,681 - TabSense-Scheduler - ERROR - Error processing sector 2 for room lobby: list indices must be integers or slices, not str
+2025-05-08 10:56:47,712 - TabSense-Scheduler - ERROR - Error processing sector 3 for room lobby: list indices must be integers or slices, not str
+2025-05-08 10:56:49,747 - TabSense-Scheduler - ERROR - Error processing sector 4 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:01:43,879 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 1
+2025-05-08 11:01:45,910 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 2
+2025-05-08 11:01:47,957 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 3
+2025-05-08 11:01:49,979 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 4
+2025-05-08 11:01:51,996 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 5
+2025-05-08 11:01:54,021 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 6
+2025-05-08 11:01:57,043 - TabSense-Scheduler - ERROR - Error processing sector 1 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:01:59,057 - TabSense-Scheduler - ERROR - Error processing sector 2 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:02:01,084 - TabSense-Scheduler - ERROR - Error processing sector 3 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:02:03,108 - TabSense-Scheduler - ERROR - Error processing sector 4 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:06:56,242 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 1
+2025-05-08 11:06:58,256 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 2
+2025-05-08 11:07:00,273 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 3
+2025-05-08 11:07:02,303 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 4
+2025-05-08 11:07:04,333 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 5
+2025-05-08 11:07:06,351 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 6
+2025-05-08 11:07:09,381 - TabSense-Scheduler - ERROR - Error processing sector 1 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:07:11,412 - TabSense-Scheduler - ERROR - Error processing sector 2 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:07:13,427 - TabSense-Scheduler - ERROR - Error processing sector 3 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:07:15,464 - TabSense-Scheduler - ERROR - Error processing sector 4 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:12:08,599 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 1
+2025-05-08 11:12:10,630 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 2
+2025-05-08 11:12:12,654 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 3
+2025-05-08 11:12:14,702 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 4
+2025-05-08 11:12:16,727 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 5
+2025-05-08 11:12:18,773 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 6
+2025-05-08 11:12:21,799 - TabSense-Scheduler - ERROR - Error processing sector 1 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:12:23,817 - TabSense-Scheduler - ERROR - Error processing sector 2 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:12:25,842 - TabSense-Scheduler - ERROR - Error processing sector 3 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:12:27,859 - TabSense-Scheduler - ERROR - Error processing sector 4 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:17:20,986 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 1
+2025-05-08 11:17:23,015 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 2
+2025-05-08 11:17:25,043 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 3
+2025-05-08 11:17:27,072 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 4
+2025-05-08 11:17:29,107 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 5
+2025-05-08 11:17:31,124 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 6
+2025-05-08 11:17:34,147 - TabSense-Scheduler - ERROR - Error processing sector 1 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:17:36,179 - TabSense-Scheduler - ERROR - Error processing sector 2 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:17:38,194 - TabSense-Scheduler - ERROR - Error processing sector 3 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:17:40,215 - TabSense-Scheduler - ERROR - Error processing sector 4 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:22:33,350 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 1
+2025-05-08 11:22:35,378 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 2
+2025-05-08 11:22:37,396 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 3
+2025-05-08 11:22:39,413 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 4
+2025-05-08 11:22:41,448 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 5
+2025-05-08 11:22:43,487 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 6
+2025-05-08 11:22:46,529 - TabSense-Scheduler - ERROR - Error processing sector 1 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:22:48,547 - TabSense-Scheduler - ERROR - Error processing sector 2 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:22:50,558 - TabSense-Scheduler - ERROR - Error processing sector 3 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:22:52,568 - TabSense-Scheduler - ERROR - Error processing sector 4 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:27:45,697 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 1
+2025-05-08 11:27:48,920 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 2
+2025-05-08 11:27:50,947 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 3
+2025-05-08 11:27:52,961 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 4
+2025-05-08 11:27:54,993 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 5
+2025-05-08 11:27:57,020 - TabSense-Scheduler - ERROR - Failed to get camera info for room test8, sector 6
+2025-05-08 11:28:00,045 - TabSense-Scheduler - ERROR - Error processing sector 1 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:28:02,076 - TabSense-Scheduler - ERROR - Error processing sector 2 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:28:04,125 - TabSense-Scheduler - ERROR - Error processing sector 3 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:28:06,152 - TabSense-Scheduler - ERROR - Error processing sector 4 for room lobby: list indices must be integers or slices, not str
+2025-05-08 11:29:54,282 - TabSense-Scheduler - INFO - Scheduler stopped by user
+2025-05-08 11:33:26,678 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 11:33:26,678 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 11:33:26,698 - TabSense-Scheduler - INFO - Found 2 clients: ['acme', 'testclient']
+2025-05-08 11:33:26,699 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 11:33:26,699 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 11:33:26,699 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 11:33:26,699 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 11:33:26,699 - TabSense-Scheduler - ERROR - Error in scheduler loop: type object 'datetime.time' has no attribute 'sleep'
+2025-05-08 11:33:37,019 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 11:33:37,019 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 11:33:37,028 - TabSense-Scheduler - INFO - Found 2 clients: ['testclient', 'acme']
+2025-05-08 11:33:37,029 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 11:33:37,029 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 11:33:37,030 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 11:33:37,030 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 11:35:20,687 - TabSense-Scheduler - INFO - Scheduler stopped by user
+2025-05-08 11:35:22,328 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 11:35:22,328 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 11:35:22,357 - TabSense-Scheduler - INFO - Found 2 clients: ['testclient', 'acme']
+2025-05-08 11:35:22,357 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 11:35:22,358 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 11:35:22,358 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 11:35:22,358 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 11:40:22,449 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:40:27,450 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:40:32,450 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:40:37,451 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:40:42,452 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:40:47,453 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:40:52,453 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:40:57,454 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:02,454 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:07,455 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:12,456 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:17,457 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:22,457 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:27,458 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:32,459 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:37,460 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:42,460 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:47,461 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:52,462 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:41:57,462 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:42:02,463 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:42:07,464 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:42:12,464 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:42:17,465 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:42:22,466 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:42:27,466 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:42:32,467 - TabSense-Scheduler - ERROR - Error in scheduler loop: Session.request() got an unexpected keyword argument 'payload'
+2025-05-08 11:42:34,682 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 11:42:34,682 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 11:42:34,710 - TabSense-Scheduler - INFO - Found 2 clients: ['acme', 'testclient']
+2025-05-08 11:42:34,710 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 11:42:34,712 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 11:42:34,712 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 11:42:34,712 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 11:42:54,660 - TabSense-Scheduler - INFO - Scheduler stopped by user
+2025-05-08 11:43:33,237 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 11:43:33,237 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 11:43:33,248 - TabSense-Scheduler - INFO - Found 2 clients: ['testclient', 'acme']
+2025-05-08 11:43:33,249 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 11:43:33,249 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 11:43:33,249 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 11:43:33,249 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 11:48:35,374 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+2025-05-08 11:48:42,402 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+2025-05-08 11:48:49,423 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+2025-05-08 11:48:56,447 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+2025-05-08 11:49:03,467 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+2025-05-08 11:49:10,487 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+2025-05-08 11:49:17,522 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+2025-05-08 11:49:24,546 - TabSense-Scheduler - INFO - Scheduler stopped by user
+2025-05-08 11:49:26,090 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 11:49:26,090 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 11:49:26,122 - TabSense-Scheduler - INFO - Found 2 clients: ['acme', 'testclient']
+2025-05-08 11:49:26,122 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 11:49:26,123 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 11:49:26,123 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 11:49:26,123 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 11:49:37,032 - TabSense-Scheduler - INFO - Scheduler stopped by user

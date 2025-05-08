@@ -1,17 +1,11 @@
 from pydantic import BaseModel
-from datetime import datetime, time
+from datetime import datetime, time, date
 import uuid
 from typing import List
 
-#HOLIDAYS CRUD
-class Holiday(BaseModel):
-    id: str= str(uuid.uuid4())
-    label: str
-    start:str
-    end:str
-    rooms:List[str]
 
-hola = Holiday(label= "Christmas", start = datetime.now().date().isoformat(), end  = datetime.now().date().isoformat(), rooms = ["lobby","hall"] )
-
-print(hola)
-print(hola.dict)
+curdate = datetime.now().date()
+print(type(curdate))
+isodate = curdate.isoformat()
+print(type(isodate))
+print(type(date.fromisoformat(isodate)))

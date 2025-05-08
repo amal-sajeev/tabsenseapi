@@ -440,13 +440,13 @@ def deleteHoliday(holiday:Holiday):
             return(str(db[f"{holiday.client}=holidays"].delete_many({"id":holiday.id})))
         if holiday.label != "":
             filterstring.update({"label": holiday.label})
-        if holiday.rooms != "":
+        if holiday.rooms != []:
             filterstring.update({"rooms": holiday.rooms})
         if holiday.start != "":
             filterstring.update({"start":holiday.start})
         if holiday.end != "":
             filterstring.update({"end":holiday.end})
-        
+        print(filterstring)
         return(str(db[f"{holiday.client}-holidays"].delete_many(filterstring)))
 
     except Exception as e:
