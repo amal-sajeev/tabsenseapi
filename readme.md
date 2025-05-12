@@ -91,10 +91,6 @@ TabSense isn't just stain detection—it's preventive hygiene intelligence. Sche
 - **PIL** – Image handling
 - **Custom stain detection engine (`staindet`)**
 
-## 📬 Feedback
-
-Got ideas, issues, or contributions? Open a pull request or create an issue. Help us make surfaces smarter.
-
 ---
 
 **Cleanliness isn't optional. Intelligence shouldn't be either.**
