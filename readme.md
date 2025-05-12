@@ -1,84 +1,101 @@
+# ![TabSense Logo](tabsense%20logo%20(Custom).png)
+
 # TabSense API
 
-## Overview
+TabSense is an intelligent stain detection and surface monitoring system that automates hygiene checks across environments with precision. Built on FastAPI and MongoDB, it allows seamless capture scheduling, image comparison, and comprehensive reporting, making it ideal for large facilities, research labs, or anywhere cleanliness is non-negotiable.
 
-TabSense is a comprehensive API for surface monitoring and management, designed to detect stains, manage schedules, camera links, and holiday tracking across multiple rooms and clients.
+## 🔍 Features
 
-## Key Features
+- **Stain Detection**  
+  Upload control and current images of surfaces, and TabSense will identify differences—using borders and shapes for auto-cropping and context-aware comparison.
 
-- **Stain Detection**: Automatically compare control and current images to identify surface stains
-- **Schedule Management**: Create, update, and manage capture schedules for different rooms
-- **Camera Link Management**: Add, retrieve, and manage camera links for different sectors and rooms
-- **Holiday Tracking**: Add and manage holiday schedules that may impact monitoring
+- **Smart Scheduling**  
+  Define when and where to run inspections with flexible day/time scheduling across sectors and rooms.
 
-## Prerequisites
+- **Rich Reports**  
+  Generate reports over date ranges for clients and rooms. Get full detection logs, image IDs, and metadata.
 
-- Python 3.8+
-- FastAPI
-- PyMongo
-- Stain Detection Module (staindet)
-- MongoDB
+- **Camera Link Management**  
+  Save and manage camera feeds tied to specific sectors in specific rooms.
 
-## Installation
+- **Holiday Handling**  
+  Define holiday periods to suppress detections during off-hours or inactive days.
 
-1. Clone the repository
-2. Install required dependencies:
-   ```bash
-   pip install fastapi pymongo staindet pillow uvicorn
-   ```
+## 🚀 Getting Started
 
-3. Set up MongoDB:
-   - Ensure MongoDB is installed and running
-   - Set the `mongocred` environment variable with your MongoDB credentials
+### Requirements
 
-## Environment Setup
+Install the dependencies from the `requirements.txt` file:
 
-- `mongocred`: MongoDB connection credentials
-- Ensure image storage directories:
-  - `imagedata/control/`
-  - `imagedata/captures/`
+```
+pip install -r requirements.txt
+```
 
-## Main Endpoints
+Ensure your environment has access to a running MongoDB instance and set the required credentials as environment variables:
 
-- `/detect`: Stain detection across room sectors
-- `/report`: Retrieve detection reports
-- `/entry`: Schedule management (add, update, delete)
-- `/cam`: Camera link management
-- `/holiday`: Holiday tracking and management
+```
+export mongocred=your_mongo_user:your_mongo_password
+```
 
-## Database Structure
+### Running the API
 
-The API uses MongoDB with collections structured by:
-- `{client}-{room}`: Detection results
-- `{client}-schedule`: Capture schedules
-- `{client}-cams`: Camera links
-- `{client}-holidays`: Holiday schedules
+To launch the server:
 
-## Security
-
-- Requires client identification for all operations
-- Uses UUID for unique identifiers
-- Supports granular filtering and management
-
-## Deployment
-
-Use Uvicorn or any ASGI server to run the FastAPI application:
-```bash
+```
 uvicorn detectapi:app --reload
 ```
 
-## Contributing
+Make sure `detectapi.py` and your image directories (`imagedata/control`, `imagedata/captures`) are correctly placed.
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
+## 🧩 Endpoint Structure
 
-## License
+The API is structured into five core functional zones:
 
-[Specify your license here]
+1. **Detection**  
+   - `/detect`: Main endpoint for stain comparison. Requires control and current image UUIDs, sector list, and room identifiers.
 
-## Contact
+2. **Reports**  
+   - `/report`: Fetches all detection records within a time range for a given room and client.
 
-For more information, please contact [Your Contact Information]
+3. **Schedules**  
+   - `/entry/*`: Add, update, delete, and fetch scheduled entries that trigger image comparisons.
+
+4. **Cameras**  
+   - `/cam/*`: Add, update, delete, and get camera links tied to sectors and rooms.
+
+5. **Holidays**  
+   - `/holiday/*`: Define and manage blackout periods where captures should be suppressed.
+
+Each endpoint uses clear, minimalistic schemas using Pydantic for type safety. MongoDB collections are scoped by client and room for isolation and scale.
+
+## 🗂 Directory Layout
+
+```
+TabSense/
+├── detectapi.py           # Main FastAPI app with all endpoints
+├── requirements.txt       # Dependency list
+├── tabsense logo (Custom).png
+├── imagedata/
+│   ├── control/           # Control (clean) images
+│   └── captures/          # Current (live) images
+```
+
+## 💡 Why TabSense?
+
+TabSense isn't just stain detection—it's preventive hygiene intelligence. Schedule checks, analyze trends, and integrate effortlessly with your infrastructure. Whether you're cleaning up messes or catching them before they start, TabSense keeps your surfaces accountable.
+
+## 🧠 Built With
+
+- **FastAPI** – Blazing-fast web framework
+- **MongoDB** – Flexible document-based storage
+- **PIL** – Image handling
+- **Custom stain detection engine (`staindet`)**
+
+## 📬 Feedback
+
+Got ideas, issues, or contributions? Open a pull request or create an issue. Help us make surfaces smarter.
+
+---
+
+**Cleanliness isn't optional. Intelligence shouldn't be either.**
+```
