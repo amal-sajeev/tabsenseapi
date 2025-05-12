@@ -108,6 +108,7 @@ def create_capture_job(client, entry):
                                              },
                                     )
         for i in holidays:
+            print(i)
             if date.fromisoformat(i["start"]) <= current_date <= i["end"]:
                 logger.info(f"Skipping job for {entry['label']} - currently in holiday [{i["label"]}]")
                 return
@@ -237,15 +238,17 @@ def main():
     
     # Run the scheduler
     while True:
-        try:
-            schedule.run_pending()
-            time.sleep(1)
-        except KeyboardInterrupt:
-            logger.info("Scheduler stopped by user")
-            break
-        except Exception as e:
-            logger.error(f"Error in scheduler loop: {str(e)}\n{e.__traceback__}")
-            time.sleep(5)  # Wait a bit before retrying
+        schedule.run_pending()
+        time.sleep(1)
+        # try:
+        #     schedule.run_pending()
+        #     time.sleep(1)
+        # except KeyboardInterrupt:
+        #     logger.info("Scheduler stopped by user")
+        #     break
+        # except Exception as e:
+        #     logger.error(f"Error in scheduler loop: {str(e)}\n{str(e.__traceback__)}")
+        #     time.sleep(5)  # Wait a bit before retrying
 
 if __name__ == "__main__":
     main()

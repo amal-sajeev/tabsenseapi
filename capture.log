@@ -157,3 +157,68 @@
 2025-05-08 11:49:26,123 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
 2025-05-08 11:49:26,123 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
 2025-05-08 11:49:37,032 - TabSense-Scheduler - INFO - Scheduler stopped by user
+2025-05-08 11:49:38,215 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 11:49:38,216 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 11:49:38,245 - TabSense-Scheduler - INFO - Found 2 clients: ['testclient', 'acme']
+2025-05-08 11:49:38,246 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 11:49:38,246 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 11:49:38,247 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 11:49:38,247 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 11:53:27,527 - TabSense-Scheduler - INFO - Scheduler stopped by user
+2025-05-08 13:14:28,047 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 13:14:28,047 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 13:14:28,057 - TabSense-Scheduler - INFO - Found 2 clients: ['testclient', 'acme']
+2025-05-08 13:14:28,057 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 13:14:28,058 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 13:14:28,058 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 13:14:28,058 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 13:19:30,171 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x00000246E62D1440>
+2025-05-08 13:19:37,195 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x00000246E62D0440>
+2025-05-08 13:19:44,222 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x00000246E62D2CC0>
+2025-05-08 13:19:51,260 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x00000246E62D1300>
+2025-05-08 13:19:58,296 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x00000246E62D2C80>
+2025-05-08 13:20:05,317 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x00000246E62D3840>
+2025-05-08 13:20:43,524 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 13:20:43,525 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 13:20:43,564 - TabSense-Scheduler - INFO - Found 2 clients: ['testclient', 'acme']
+2025-05-08 13:20:43,565 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 13:20:43,565 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 13:20:43,566 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 13:20:43,566 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 13:25:45,677 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x000001B67F8C01C0>
+2025-05-08 13:25:52,705 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x000001B67F8C00C0>
+2025-05-08 13:25:59,727 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x000001B67F8C2840>
+2025-05-08 13:26:06,745 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x000001B67F8C3440>
+2025-05-08 13:26:13,771 - TabSense-Scheduler - ERROR - Error in scheduler loop: byte indices must be integers or slices, not str
+<traceback object at 0x000001B67F8C3100>
+2025-05-08 13:26:35,627 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 13:26:35,627 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 13:26:35,661 - TabSense-Scheduler - INFO - Found 2 clients: ['testclient', 'acme']
+2025-05-08 13:26:35,661 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 13:26:35,662 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 13:26:35,662 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 13:26:35,662 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 13:27:00,503 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 13:27:00,503 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 13:27:00,526 - TabSense-Scheduler - INFO - Found 2 clients: ['acme', 'testclient']
+2025-05-08 13:27:00,527 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 13:27:00,527 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
+2025-05-08 13:27:00,528 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 13:27:00,528 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 14:04:15,505 - TabSense-Scheduler - INFO - Connected to MongoDB
+2025-05-08 14:04:15,506 - TabSense-Scheduler - INFO - Starting TabSense Scheduler
+2025-05-08 14:04:15,540 - TabSense-Scheduler - INFO - Found 2 clients: ['testclient', 'acme']
+2025-05-08 14:04:15,541 - TabSense-Scheduler - INFO - Found 1 schedule entries for client testclient
+2025-05-08 14:04:15,541 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room test8
+2025-05-08 14:04:15,541 - TabSense-Scheduler - INFO - Found 1 schedule entries for client acme
+2025-05-08 14:04:15,541 - TabSense-Scheduler - INFO - Scheduled job for late_dinner in room lobby
