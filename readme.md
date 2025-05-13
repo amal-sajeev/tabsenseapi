@@ -19,7 +19,7 @@ This sophisticated border detection ensures that only the relevant content withi
 
 ### 2. Digital Image Subtraction & Fusion
 
-The core of StainDet's detection algorithm involves a sophisticated negative-image based subtraction process:
+The core of StainDet's detection algorithm involves a simple negative-image based subtraction process:
 
 ```
 Fused Image = α * Current_Image + (1-α) * Negative(Control_Image)
