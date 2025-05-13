@@ -4,6 +4,56 @@
 
 TabSense is an intelligent stain detection and surface monitoring system that automates hygiene checks across environments with precision. Built on FastAPI and MongoDB, it allows seamless capture scheduling, image comparison, and comprehensive reporting, making it ideal for large facilities, research labs, or anywhere cleanliness is non-negotiable.
 
+## 🔬 How It Works
+
+StainDet employs a multi-stage computational pipeline to achieve exceptional stain detection capabilities:
+
+### 1. Intelligent Border Detection & Cropping
+
+The system first identifies colored borders within images using **Hue-Saturation-Value (HSV)** color space analysis, automatically detecting:
+
+- Various border colors (blue, green, yellow, red)
+- Multiple border shapes (circles, rectangles, ellipses, irregular polygons)
+
+This sophisticated border detection ensures that only the relevant content within the borders is processed, eliminating background noise and improving analysis accuracy.
+
+### 2. Digital Image Subtraction & Fusion
+
+The core of StainDet's detection algorithm involves a sophisticated negative-image based subtraction process:
+
+```
+Fused Image = α * Current_Image + (1-α) * Negative(Control_Image)
+```
+
+Where:
+- Control_Image is a clean reference image
+- Current_Image is the image being analyzed
+- α is a weighting factor (typically 0.5)
+
+This fusion technique leverages the mathematical property that when a pixel is identical in both images, the resulting value will be approximately 127 (in 8-bit grayscale). Any deviation from this value indicates a potential stain or anomaly.
+
+### 3. Edge Enhancement & Noise Reduction
+
+After fusion, the system applies:
+- Median filtering to reduce random noise
+- Edge detection algorithms to highlight boundaries
+- Border cropping to focus on the region of interest
+
+These steps enhance the visibility of subtle stains while minimizing false positives.
+
+### 4. Intelligent Stain Localization
+
+StainDet doesn't just detect stains—it locates them with precision:
+
+1. The image is divided into a grid of sectors (default: 5×5)
+2. Each sector is analyzed for non-black pixel density
+3. The sector with the highest density of anomalous pixels is identified
+4. A visual highlight is applied to the region containing the stain
+
+This sector-based approach ensures that even small stains are accurately located within larger images.
+
+# ![How it works](Demo.png)
+
 ## 🔍 Features
 
 - **Stain Detection**  

@@ -501,7 +501,7 @@ def detect(control:str, current:str, crop:bool=True, color:str="blue", shape:str
 
 if __name__ == "__main__":
     # Example usage:
-    # detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "circle")
-    # detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "oval")
+    # detect("imagedata/thinbluecirc.png", "imagedata/thinbluecircstain.png", "thinbluecirc", "circle")
+    # detect("imagedata/thinbluecirc.png", "imagedata/thinbluecircstain.png", "thinbluecirc", "oval")
     # Or use auto detection:
-    detect("imagedata/bluesplit.png", "imagedata/bluesplitstain.png", "bluesplit", "auto")
+    detect("imagedata/thinbluecirc.png", "imagedata/thinbluecirc.png", "thinbluecirc", "auto")
